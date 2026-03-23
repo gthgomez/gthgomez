@@ -1,4 +1,4 @@
-# Jonathan Gomez — gthgomez
+# Jonathan Gomez Aguilar — gthgomez
 
 I build AI orchestration systems, prompt infrastructure, and practical software tools.
 
