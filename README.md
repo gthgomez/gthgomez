@@ -1,4 +1,4 @@
-# Gabriel Gomez
+# Jonathan Gomez Aguilar
 
 **Backend & AI Infrastructure Engineer**
 Building systems where AI behavior is predictable, costs are controlled, and data models don't lie.
