@@ -158,3 +158,8 @@ Python · TypeScript · Rust · React · Next.js · SQLite · Supabase · Deno �
 Backend systems, AI infrastructure, and applied ML tooling. Open to internship and early-career roles in software engineering, ML infrastructure, or backend development.
 
 [LinkedIn](https://linkedin.com/in/gthgomez)
+
+## License
+
+This profile repository is publicly viewable for portfolio and project-navigation purposes. It is not open source. See [LICENSE.md](LICENSE.md) for permitted use. Referenced projects and third-party materials retain their own licenses.
+
