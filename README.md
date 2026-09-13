@@ -185,4 +185,4 @@ Backend systems, AI infrastructure, and applied ML tooling — currently agent h
 
 ## License
 
-This profile repository is publicly viewable for portfolio and project-navigation purposes. It is not open source. See [LICENSE.md](LICENSE.md) for permitted use. Referenced projects and third-party materials retain their own licenses.
+This profile repository is publicly viewable for portfolio and project-navigation purposes. It is not open source. See [LICENSE](LICENSE) for permitted use. Referenced projects and third-party materials retain their own licenses.
