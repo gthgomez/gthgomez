@@ -1,0 +1,40 @@
+name: Links
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly sweep to catch external link rot even with no commits.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: links-${{ github.ref }}
+  # Only cancel superseded pull-request runs. Push/schedule runs share this
+  # group, so an unconditional cancel would let the weekly sweep abort a push.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  lychee:
+    name: Check links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Check links in Markdown
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          fail: true
+          args: >-
+            --verbose
+            --no-progress
+            --max-retries 2
+            --timeout 20
+            --accept 100..=103,200..=299,429
+            --exclude '^https://(www\.)?linkedin\.com'
+            './**/*.md'
