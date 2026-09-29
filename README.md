@@ -11,39 +11,56 @@ Beyond that core, I build in public across mobile and games: an on-device Androi
 
 ## Featured Projects
 
-**[GPCGuard](https://www.gpcguard.app)** *(public release in progress)*
-Privacy compliance is a legal requirement, but most engineering teams have no systematic way to verify it. GPCGuard is a GPC/CCPA compliance SaaS that detects and reports on Global Privacy Control opt-out signals as required under CCPA/CPRA, CPA, CTDPA, and NJDPA. It includes a Python scanner suite, Stripe billing, a Next.js dashboard, and Supabase Edge Functions on the backend. Security audit complete; live at [gpcguard.app](https://www.gpcguard.app).
-
 **[Babel](https://github.com/gthgomez/Babel)**
-AI systems fail in production not because the model is wrong, but because agent behavior is inconsistent, unversioned, and impossible to audit. Babel is an open-source agent harness for real software work: a local coding agent with a conversational **chat** loop, explicit **plan** and **deep** modes, and an inspectable Prompt OS underneath. Around the model it composes a deterministic control surface — controller gates, mode policies, isolation profiles, revision-bound verification, completion authority, and hash-linked evidence — so the operating instructions stay visible and testable.
+AI systems fail in production not because the model is wrong, but because agent behavior is inconsistent, unversioned, and impossible to audit. Babel is an open-source agent harness for real software work: a local coding agent with a conversational **chat** loop, explicit **plan** and **deep** modes, and an inspectable Prompt OS underneath. Around the model it composes a deterministic control surface — controller gates, mode policies, isolation profiles, revision-bound verification, completion authority, and hash-linked evidence — so the operating instructions stay visible and testable. *(Apache-2.0)*
 
 **[Prismatix](https://github.com/gthgomez/Prismatix)**
-Running every prompt through the most capable model is expensive and slow. Prismatix is a cost-aware multi-provider AI chat client: each request is classified into a routing role and mapped to a curated, priced model through the OpenCode model hub, and the UI explains every choice. Cost safety is fail-closed — if a price is unknown, the request is rejected rather than silently re-routed to something more expensive. One normalized SSE stream spans every gateway and protocol. Direct Anthropic/OpenAI/Gemini/NVIDIA/DeepInfra routes remain as an explicit legacy fallback, not the default path.
+Running every prompt through the most capable model is expensive and slow. Prismatix is a cost-aware multi-provider AI chat client: each request is classified into a routing role and mapped to a curated, priced model through the OpenCode model hub, and the UI explains every choice. Cost safety is fail-closed — if a price is unknown, the request is rejected rather than silently re-routed to something more expensive. One normalized SSE stream spans every gateway and protocol. Direct Anthropic/OpenAI/Gemini/NVIDIA/DeepInfra routes remain as an explicit legacy fallback, not the default path. *(MIT)*
 
 **[MonteCarlo-Ledger](https://github.com/gthgomez/MonteCarlo-Ledger)**
-Personal finance software that rounds incorrectly or simulates with too few runs gives you false confidence in your projections. MonteCarlo-Ledger is a local-first finance CLI and API with a ledger-first SQLite core that stores monetary values as integer cents — eliminating floating-point rounding errors at the data layer — and runs bounded Monte Carlo simulations to produce safe-to-spend projections grounded in variance, not averages. The companion [Android app](https://github.com/gthgomez/MonteCarloLedger-Android) adds deterministic bill pacing and AES-GCM encrypted backups.
+Personal finance software that rounds incorrectly or simulates with too few runs gives you false confidence in your projections. MonteCarlo-Ledger is a local-first finance CLI and API with a ledger-first SQLite core that stores monetary values as integer cents — eliminating floating-point rounding errors at the data layer — and runs bounded Monte Carlo simulations to produce safe-to-spend projections grounded in variance, not averages. The companion [Android app](https://github.com/gthgomez/MonteCarloLedger-Android) adds deterministic bill pacing and AES-GCM encrypted backups. *(MIT)*
+
+**[Scout](https://github.com/gthgomez/Scout)** *(MIT)*
+Most developers have no systematic way to find which open-source projects are actively paying for help. Scout is a local CLI that finds paid open-source bounty candidates and packages each one into artifacts a coding agent can pick up and execute — Cursor, Claude Code, Codex, Gemini, or anything else able to follow a runbook. Policy gates are enforced against Scout's own operations rather than trusted to the external agent, and the work stays local. This is the most complete open-source project on the account: CI, `CONTRIBUTING.md`, `CHANGELOG.md`, `.editorconfig`, a Dockerfile, architecture ADRs under `docs/`, and a shipped [v0.6.2 release](https://github.com/gthgomez/Scout/releases/tag/v0.6.2).
 
 ---
 
 ## More Projects
 
-**[PrismLocal](https://github.com/gthgomez/PrismLocal)** — Apache-2.0 Android app for private, on-device GGUF LLM inference. Embeds a C++20 `llama.cpp` runtime behind a thread-safe JNI bridge, with chat, tool dispatch, and local document retrieval (RAG).
+**[PrismLocal](https://github.com/gthgomez/PrismLocal)** — Android app for private, on-device GGUF LLM inference. Embeds a C++20 `llama.cpp` runtime behind a thread-safe JNI bridge, with chat, tool dispatch, and local document retrieval (RAG). *(Apache-2.0)*
 
-**[GBA_Emulator](https://github.com/gthgomez/GBA_Emulator)** — Portable Game Boy Advance emulator core (C++17), validated against 13 public mGBA test suites with a committed regression baseline and a credibility matrix, plus a sibling Android dev shell.
+**[GBA_Emulator](https://github.com/gthgomez/GBA_Emulator)** — Portable Game Boy Advance emulator core (C++17), validated against 13 public mGBA test suites with a committed regression baseline and a credibility matrix. *(Apache-2.0)*
 
-**[MonteCarloLedger-Android](https://github.com/gthgomez/MonteCarloLedger-Android)** — Kotlin/Compose financial ledger app focused on deterministic forecasting, bill pacing, and encrypted backups. No network dependency.
+**[GbaEmulatorAndroid](https://github.com/gthgomez/GbaEmulatorAndroid)** — Android development shell for the GBA_Emulator core: Compose UI, SAF ROM loading, a SurfaceView 240x160 viewport, Oboe audio, and a JNI/CMake bridge into the sibling C++ core. *(Apache-2.0)*
 
-**[ProofPath](https://github.com/gthgomez/ProofPath)** — Offline-first React Native learning system that turns lessons into reviewer-ready portfolio evidence, built around active engineering exercises instead of passive content.
+**[MonteCarloLedger-Android](https://github.com/gthgomez/MonteCarloLedger-Android)** — Kotlin/Compose financial ledger app focused on deterministic forecasting, bill pacing, and encrypted backups. No network dependency. *(Public source, all rights reserved)*
 
-**[DragonWake](https://github.com/gthgomez/DragonWake)** — Multiplayer web MMORTS MVP beta: async city builder plus map combat, with a server-derived Dragon Presence lifecycle and canonical save migration.
+**[ProofPath](https://github.com/gthgomez/ProofPath)** — Offline-first React Native learning system that turns lessons into reviewer-ready portfolio evidence, built around active engineering exercises instead of passive content. *(Public source, all rights reserved)*
 
-**[Orbitscar](https://github.com/gthgomez/Orbitscar)** — Clean-room sci-fi strategy prototype: a deterministic headless battle/colony simulation in one package, declarative content validation in another, and an accessible DOM command surface beside a Phaser tactical view.
+**[DragonWake](https://github.com/gthgomez/DragonWake)** — Multiplayer web MMORTS MVP beta: async city builder plus map combat, with a server-derived Dragon Presence lifecycle and canonical save migration. *(Public source, all rights reserved)*
 
-**[reliquary](https://github.com/gthgomez/reliquary)** — Medieval-fantasy monster-binding RPG prototype: elemental battles, creature evolution, binding, party and box storage, saves, and keyboard/touch controls. Public source, all rights reserved.
+**[Orbitscar](https://github.com/gthgomez/Orbitscar)** — Clean-room sci-fi strategy prototype: a deterministic headless battle/colony simulation in one package, declarative content validation in another, and an accessible DOM command surface beside a Phaser tactical view. *(Public source, all rights reserved)*
 
-**[WallpaperCropFixer](https://github.com/gthgomez/WallpaperCropFixer)** — On-device Android utility that positions crops around faces with ML Kit and handles EXIF orientation correctly. Requests only `SET_WALLPAPER`; photos never leave the device.
+**[ManaNet](https://github.com/gthgomez/ManaNet)** — Cyber-themed tower defense game and a Godot 4.6 / GDScript port of the Python/Kivy TowerDefenseKivy. *(Public source, all rights reserved)*
 
-**[babel-origin-site](https://github.com/gthgomez/babel-origin-site)** — Public static origin and bounded demo front door for Babel.
+**[GravityPivot](https://github.com/gthgomez/GravityPivot)** — Hyper-casual physics space-navigation game: tether to gravity anchors to orbit, swing, and sling through an infinite cave. Refactored out of a single-file prototype into DI-decoupled modules on TypeScript + Vite, with Vitest coverage. *(Public source, all rights reserved)*
+
+**[reliquary](https://github.com/gthgomez/reliquary)** — Medieval-fantasy monster-binding RPG prototype: elemental battles, creature evolution, binding, party and box storage, saves, and keyboard/touch controls. *(Public source, all rights reserved)*
+
+**[WallpaperCropFixer](https://github.com/gthgomez/WallpaperCropFixer)** — On-device Android utility that positions crops around faces with ML Kit and handles EXIF orientation correctly. Requests only `SET_WALLPAPER`; photos never leave the device. *(Public source, all rights reserved)*
+
+**[ExactUploadFixer](https://github.com/gthgomez/ExactUploadFixer)** — Android (Kotlin/Compose) utility that resizes and compresses images to meet exact upload requirements — dimensions and file size — for things like passport or visa-photo submissions. Free manual tier plus Pro presets via Play Billing, with an Amazon flavor. *(Public source, all rights reserved)*
+
+**[babel-origin-site](https://github.com/gthgomez/babel-origin-site)** — Public static origin and bounded demo front door for Babel. *(Public source, all rights reserved)*
+
+---
+
+## Private & Commercial
+
+Not everything here has a public repository. These projects are real and shipped, but the source is not published — the only thing to inspect is the live product.
+
+**[GPCGuard](https://www.gpcguard.app)** *(private repository — source not published)*
+Privacy compliance is a legal requirement, but most engineering teams have no systematic way to verify it. GPCGuard is a GPC/CCPA compliance SaaS that detects and reports on Global Privacy Control opt-out signals as required under CCPA/CPRA, CPA, CTDPA, and NJDPA. It includes a Python scanner suite, Stripe billing, a Next.js dashboard, and Supabase Edge Functions on the backend. Security audit complete; live at [gpcguard.app](https://www.gpcguard.app).
 
 ---
 
@@ -51,9 +68,10 @@ Personal finance software that rounds incorrectly or simulates with too few runs
 
 These projects are designed to be verifiable, not just described. Start with the live surfaces:
 
-- **GPCGuard** — live product: <https://www.gpcguard.app>
+- **GPCGuard** — live product: <https://www.gpcguard.app> (private repo — product surface only, no public source)
 - **Prismatix** — live app: <https://prismatix-app.vercel.app> · routing and cost behavior documented in the [repo README](https://github.com/gthgomez/Prismatix#auto-routing--cost-safety--what-actually-happens)
 - **Babel** — [latest release](https://github.com/gthgomez/Babel/releases/latest) and a public release gate in CI
+- **Scout** — [v0.6.2 release](https://github.com/gthgomez/Scout/releases/tag/v0.6.2), CI, `CONTRIBUTING.md`, and architecture ADRs in [`docs/architecture/`](https://github.com/gthgomez/Scout/tree/main/docs/architecture)
 - **GBA_Emulator** — green mGBA suites plus a committed [credibility matrix baseline](https://github.com/gthgomez/GBA_Emulator)
 - **Babel origin site** — <https://babel-origin-site.vercel.app>
 
@@ -158,14 +176,15 @@ Most finance software uses `DECIMAL` or `float` for readability. I use integer c
 | Repo | What it demonstrates |
 |---|---|
 | **[Babel](https://github.com/gthgomez/Babel)** | Systems design — governance, contracts, auditability |
+| **[Scout](https://github.com/gthgomez/Scout)** | OSS project hygiene — policy enforcement, agent handoff, CI, docs, releases |
 | **[Prismatix](https://github.com/gthgomez/Prismatix)** | Production tradeoff reasoning — cost, latency, provider abstraction |
-| **[GPCGuard](https://www.gpcguard.app)** | End-to-end product delivery — compliance domain, full-stack, shipped |
+| **[GPCGuard](https://www.gpcguard.app)** | End-to-end product delivery — compliance domain, full-stack, shipped (private repo; no public source) |
 | **[PrismLocal](https://github.com/gthgomez/PrismLocal)** | Systems + mobile — native runtime integration (JNI/C++), privacy |
 | **[MonteCarlo-Ledger](https://github.com/gthgomez/MonteCarlo-Ledger)** | Data correctness — determinism, integer money, clean schema |
 | **[GBA_Emulator](https://github.com/gthgomez/GBA_Emulator)** | Low-level rigor — test-oracle evidence, emulation correctness |
 | **[DragonWake](https://github.com/gthgomez/DragonWake)** / **[Orbitscar](https://github.com/gthgomez/Orbitscar)** | Game systems — simulation, multiplayer, deterministic state |
 
-Babel and Prismatix are the most architecturally complex. GPCGuard is the most complete product. PrismLocal and GBA_Emulator show the systems-native side. MonteCarlo-Ledger is smaller but demonstrates a data-correctness mindset that shows up consistently across all of the work.
+Babel and Prismatix are the most architecturally complex. Scout is the best-documented open-source project. GPCGuard is the most complete product, though its source is not public. PrismLocal and GBA_Emulator show the systems-native side. MonteCarlo-Ledger is smaller but demonstrates a data-correctness mindset that shows up consistently across all of the work.
 
 ---
 
