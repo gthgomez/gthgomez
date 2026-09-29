@@ -15,7 +15,7 @@ Beyond that core, I build in public across mobile and games: an on-device Androi
 Privacy compliance is a legal requirement, but most engineering teams have no systematic way to verify it. GPCGuard is a GPC/CCPA compliance SaaS that detects and reports on Global Privacy Control opt-out signals as required under CCPA/CPRA, CPA, CTDPA, and NJDPA. It includes a Python scanner suite, Stripe billing, a Next.js dashboard, and Supabase Edge Functions on the backend. Security audit complete; live at [gpcguard.app](https://www.gpcguard.app).
 
 **[Babel](https://github.com/gthgomez/Babel)**
-AI systems fail in production not because the model is wrong, but because agent behavior is inconsistent, unversioned, and impossible to audit. Babel is an open-source agent harness for real software work: a local coding agent with a conversational **chat** loop, explicit **plan** and **deep** modes, and an inspectable Prompt OS underneath. Around the model it composes a deterministic control surface — controller gates, mode policies, isolation profiles, revision-bound verification, completion authority, and hash-linked evidence — so the operating instructions stay visible and testable. The independent [Babel vs. ZCode harness deep-dive](https://github.com/gthgomez/babel-vs-zcode-harness-report) compares it against another harness dimension by dimension.
+AI systems fail in production not because the model is wrong, but because agent behavior is inconsistent, unversioned, and impossible to audit. Babel is an open-source agent harness for real software work: a local coding agent with a conversational **chat** loop, explicit **plan** and **deep** modes, and an inspectable Prompt OS underneath. Around the model it composes a deterministic control surface — controller gates, mode policies, isolation profiles, revision-bound verification, completion authority, and hash-linked evidence — so the operating instructions stay visible and testable.
 
 **[Prismatix](https://github.com/gthgomez/Prismatix)**
 Running every prompt through the most capable model is expensive and slow. Prismatix is a cost-aware multi-provider AI chat client: each request is classified into a routing role and mapped to a curated, priced model through the OpenCode model hub, and the UI explains every choice. Cost safety is fail-closed — if a price is unknown, the request is rejected rather than silently re-routed to something more expensive. One normalized SSE stream spans every gateway and protocol. Direct Anthropic/OpenAI/Gemini/NVIDIA/DeepInfra routes remain as an explicit legacy fallback, not the default path.
@@ -43,8 +43,6 @@ Personal finance software that rounds incorrectly or simulates with too few runs
 
 **[WallpaperCropFixer](https://github.com/gthgomez/WallpaperCropFixer)** — On-device Android utility that positions crops around faces with ML Kit and handles EXIF orientation correctly. Requests only `SET_WALLPAPER`; photos never leave the device.
 
-**[babel-vs-zcode-harness-report](https://github.com/gthgomez/babel-vs-zcode-harness-report)** — Ten fact-checked dimensions comparing two agent harnesses, with simulations and verdicts. A template for evaluating harness design instead of trusting vibes.
-
 **[babel-origin-site](https://github.com/gthgomez/babel-origin-site)** — Public static origin and bounded demo front door for Babel.
 
 ---
@@ -55,7 +53,7 @@ These projects are designed to be verifiable, not just described. Start with the
 
 - **GPCGuard** — live product: <https://www.gpcguard.app>
 - **Prismatix** — live app: <https://prismatix-app.vercel.app> · routing and cost behavior documented in the [repo README](https://github.com/gthgomez/Prismatix#auto-routing--cost-safety--what-actually-happens)
-- **Babel** — [latest release](https://github.com/gthgomez/Babel/releases/latest), a public release gate in CI, and an independent [harness comparison report](https://github.com/gthgomez/babel-vs-zcode-harness-report)
+- **Babel** — [latest release](https://github.com/gthgomez/Babel/releases/latest) and a public release gate in CI
 - **GBA_Emulator** — green mGBA suites plus a committed [credibility matrix baseline](https://github.com/gthgomez/GBA_Emulator)
 - **Babel origin site** — <https://babel-origin-site.vercel.app>
 
