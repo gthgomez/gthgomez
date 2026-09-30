@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "repository": "fixture/missing-artifact",
+  "source_sha": "__SOURCE_SHA__",
+  "generated_at_utc": "2026-09-29T00:00:00Z",
+  "producer": "fixture",
+  "command_id": "artifact-check",
+  "exit_code": 0,
+  "checks": [
+    {"dimension": "build", "name": "build", "state": "PASS", "scope": "fixture", "evidence": "inline"}
+  ],
+  "artifact_hashes": {"evidence/gone.txt": "deadbeef00000000000000000000000000000000000000000000000000000000"},
+  "limitations": ["fixture"]
+}
