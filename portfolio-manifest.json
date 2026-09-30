@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "repository": "gthgomez/gthgomez",
+  "project_type": "profile",
+  "maturity": "live",
+  "source_visibility_policy": "proprietary-public-source (all rights reserved; public for visibility only)",
+  "license_path": "LICENSE",
+  "default_branch": "main",
+  "supported_toolchains": [
+    "python>=3.9 (standard library only for tools/portfolio_hygiene.py)"
+  ],
+  "approved_commands": [
+    {
+      "id": "hygiene-check",
+      "argv": ["python", "tools/portfolio_hygiene.py", "check", "--repo", ".", "--config", "portfolio-manifest.json"],
+      "cwd": ".",
+      "allowed_env": [],
+      "network": "none",
+      "output_artifact": "stdout (exit 0 clean, 1 findings, 2 invalid config)"
+    },
+    {
+      "id": "hygiene-tests",
+      "argv": ["python", "-m", "unittest", "discover", "-s", "tools/tests", "-p", "test_*.py"],
+      "cwd": ".",
+      "allowed_env": [],
+      "network": "none",
+      "output_artifact": "stdout (unittest report)"
+    }
+  ],
+  "evidence_links": [],
+  "release_policy": "none (profile repository; no releases, no supported versions)",
+  "cross_repo_dependencies": [],
+  "flagship_role": "account index and methodology home; PF04 derives the account index from per-repo manifests",
+  "public_entrypoints": [
+    "README.md",
+    "SECURITY.md",
+    "docs"
+  ],
+  "require_security_reporting": false,
+  "security_reporting_path": "SECURITY.md",
+  "version_checks": [],
+  "generated_doc_markers": [],
+  "suppressions": []
+}
