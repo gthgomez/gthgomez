@@ -1,0 +1,32 @@
+name: Portfolio Hygiene
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    # Offline, read-only PR gate. No deployment/owner credentials, no
+    # pull_request_target code execution, no hosted-service dependency.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run hygiene checker unit tests
+        run: python -m unittest discover -s tools/tests -p "test_*.py"
+
+      - name: Run hygiene checker against this repository
+        run: python tools/portfolio_hygiene.py check --repo . --config portfolio-manifest.json
