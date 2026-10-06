@@ -298,8 +298,9 @@ def check_links(report: Report, config: dict, repo: str, doc_files: list[str]) -
                     report.add("H002", "blocking", rel, lineno,
                                "link escapes the public checkout", target)
                     continue
-                if os.path.exists(resolved):
-                    if not link_target_exists_case_sensitive(repo_root, resolved):
+                exists_ci, exact_case = resolve_link_target(repo_root, resolved)
+                if exists_ci:
+                    if not exact_case:
                         report.add("H002", "blocking", rel, lineno,
                                    "link target exists but with different case "
                                    "(breaks on case-sensitive filesystems)",
@@ -326,25 +327,32 @@ def check_links(report: Report, config: dict, repo: str, doc_files: list[str]) -
                                    target)
 
 
-def link_target_exists_case_sensitive(repo_root: str, resolved: str) -> bool:
-    """True if every path component from repo_root exists with exact case.
+def resolve_link_target(repo_root: str, resolved: str) -> tuple[bool, bool]:
+    """Walks the path components and returns (exists_case_insensitively, exact_case_match).
 
-    os.path.exists/listdir are case-insensitive on Windows and macOS, so the
-    walk compares each component against the parent's real directory entries.
+    Works identically on case-insensitive (Windows, macOS) and case-sensitive (Linux)
+    filesystems by inspecting directory entry lists.
     """
     cur = os.path.abspath(repo_root)
     rel = os.path.relpath(os.path.abspath(resolved), cur)
     if rel.startswith(".."):
-        return False
+        return (False, False)
+    exact = True
     for part in rel.split(os.sep):
         try:
             entries = os.listdir(cur)
         except OSError:
-            return False
-        if part not in entries:
-            return False
-        cur = os.path.join(cur, part)
-    return True
+            return (False, False)
+        if part in entries:
+            cur = os.path.join(cur, part)
+        else:
+            part_lower = part.lower()
+            matches = [e for e in entries if e.lower() == part_lower]
+            if not matches:
+                return (False, False)
+            exact = False
+            cur = os.path.join(cur, matches[0])
+    return (True, exact)
 
 
 # ---------------------------------------------------------------- H004
