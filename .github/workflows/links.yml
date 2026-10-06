@@ -37,4 +37,5 @@ jobs:
             --timeout 20
             --accept 100..=103,200..=299,429
             --exclude '^https://(www\.)?linkedin\.com'
+            --exclude-path 'tools/tests/fixtures'
             './**/*.md'
