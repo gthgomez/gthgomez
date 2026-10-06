@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "repository": "fixture/clean",
+  "source_sha": "__SOURCE_SHA__",
+  "generated_at_utc": "2026-09-29T00:00:00Z",
+  "producer": "portfolio_hygiene fixture",
+  "command_id": "fixture-check",
+  "exit_code": 0,
+  "checks": [
+    {"dimension": "unit", "name": "example-check", "state": "PASS", "scope": "fixture", "evidence": "evidence/report.txt"}
+  ],
+  "artifact_hashes": {"evidence/report.txt": "__DIGEST__"},
+  "limitations": ["fixture only"]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "repository": "fixture/nongreen",
+  "source_sha": "__SOURCE_SHA__",
+  "generated_at_utc": "2026-09-29T00:00:00Z",
+  "producer": "partial run",
+  "command_id": "partial-check",
+  "exit_code": 0,
+  "checks": [
+    {"dimension": "device", "name": "physical-qualification", "state": "UNKNOWN", "scope": "fixture", "evidence": "inline"},
+    {"dimension": "unit", "name": "omitted-state", "scope": "fixture", "evidence": "inline"}
+  ],
+  "artifact_hashes": {},
+  "limitations": ["fixture"]
+}
