@@ -352,5 +352,202 @@ class ConfigAndToolFailureTests(FixtureCase):
         self.assertEqual(wrapper.returncode, 1)
 
 
+class CheckoutConfinementTests(FixtureCase):
+    """Out-of-checkout targets must never be read, modified, or leaked."""
+
+    def test_evidence_receipt_outside_checkout_is_not_read(self):
+        """Negative control: a traversal receipt path must be rejected as an
+        escape finding, and the outside file must not be parsed (it is
+        deliberately invalid JSON; a 'not valid JSON' finding would mean it
+        was read)."""
+        tmp = self.setup_fixture("clean", config_overrides={
+            "evidence_links": [{"path": "../outside/secret.json", "current": False}],
+        })
+        outside_dir = os.path.join(os.path.dirname(tmp), "outside")
+        os.makedirs(outside_dir, exist_ok=True)
+        self.addCleanup(shutil.rmtree, outside_dir, ignore_errors=True)
+        with open(os.path.join(outside_dir, "secret.json"), "w") as f:
+            f.write("THIS IS NOT JSON{")
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H006", ids)
+        payload = json.loads(proc.stdout)
+        h006 = [f for f in payload["findings"] if f["rule_id"] == "H006"]
+        self.assertTrue(all("escapes" in f["message"] for f in h006))
+        out = proc.stdout + proc.stderr
+        self.assertNotIn(outside_dir, out, "outside locations must not leak")
+        self.assertNotIn("not valid JSON", out, "outside file must not be read")
+
+    def test_evidence_receipt_absolute_path_is_rejected(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "evidence_links": [{"path": "/etc/passwd", "current": False}],
+        })
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H006", ids)
+        payload = json.loads(proc.stdout)
+        h006 = [f for f in payload["findings"] if f["rule_id"] == "H006"]
+        self.assertTrue(all("escapes" in f["message"] for f in h006))
+
+    def test_symlinked_artifact_pointing_outside_fails(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "evidence_links": [{"path": "evidence/receipt.json", "current": True}],
+        })
+        outside_dir = os.path.join(os.path.dirname(tmp), "outside")
+        os.makedirs(outside_dir, exist_ok=True)
+        self.addCleanup(shutil.rmtree, outside_dir, ignore_errors=True)
+        outside_file = os.path.join(outside_dir, "artifact.txt")
+        with open(outside_file, "w") as f:
+            f.write("outside bytes")
+        os.symlink(outside_file, os.path.join(tmp, "artifact.txt"))
+        receipt = {
+            "schema_version": 1, "repository": "fixture/repo",
+            "source_sha": HEAD_A, "generated_at_utc": "2026-01-01T00:00:00Z",
+            "producer": "test", "exit_code": 0,
+            "checks": [{"name": "unit", "state": "PASS"}],
+            "artifact_hashes": {"artifact.txt": digest(outside_file)},
+            "limitations": [],
+        }
+        with open(os.path.join(tmp, "evidence", "receipt.json"), "w") as f:
+            json.dump(receipt, f)
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H006", ids)
+        payload = json.loads(proc.stdout)
+        messages = " | ".join(f["message"] for f in payload["findings"] if f["rule_id"] == "H006")
+        self.assertIn("escapes", messages)
+
+    def test_public_entrypoint_outside_checkout_is_invalid_config(self):
+        outside_dir = os.path.join(tempfile.mkdtemp(prefix="hygiene-out-"), "docs")
+        self.addCleanup(shutil.rmtree, os.path.dirname(outside_dir), ignore_errors=True)
+        os.makedirs(outside_dir)
+        with open(os.path.join(outside_dir, "secret.md"), "w") as f:
+            f.write("# Secret\n/home/linuxuser/marker\n")
+        tmp = self.setup_fixture("clean")
+        config_path = os.path.join(tmp, "portfolio-manifest.json")
+        with open(config_path) as f:
+            config = json.load(f)
+        config["public_entrypoints"] = ["README.md", outside_dir]
+        with open(config_path, "w") as f:
+            json.dump(config, f)
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertNotIn("Secret", proc.stdout + proc.stderr)
+
+    def test_symlinked_checkout_still_passes(self):
+        """A checkout reached through a symlink must not be false-rejected."""
+        tmp = self.setup_fixture("clean")
+        link = os.path.join(tempfile.mkdtemp(prefix="hygiene-lnk-"), "repo-link")
+        self.addCleanup(shutil.rmtree, os.path.dirname(link), ignore_errors=True)
+        os.symlink(tmp, link)
+        config_path = os.path.join(link, "portfolio-manifest.json")
+        proc = subprocess.run(
+            [sys.executable, CHECKER, "check", "--repo", link,
+             "--config", config_path, "--format", "json", "--head", HEAD_A],
+            capture_output=True, text=True, timeout=60)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_approved_command_windows_absolute_token_fails(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "approved_commands": [{
+                "id": "run-external", "argv": ["python", "C:\\opt\\tools\\script.py"],
+                "cwd": ".", "allowed_env": [], "network": "none",
+                "output_artifact": "stdout",
+            }],
+        })
+        ids = self.rule_ids(self.run_checker(tmp))
+        self.assertIn("H008", ids)
+
+    def test_approved_command_absolute_file_token_fails(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "approved_commands": [{
+                "id": "run-external", "argv": ["python", "/opt/tools/script.py"],
+                "cwd": ".", "allowed_env": [], "network": "none",
+                "output_artifact": "stdout",
+            }],
+        })
+        ids = self.rule_ids(self.run_checker(tmp))
+        self.assertIn("H008", ids)
+
+    def test_approved_command_traversal_file_token_fails(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "approved_commands": [{
+                "id": "run-external", "argv": ["python", "../outside/script.py"],
+                "cwd": ".", "allowed_env": [], "network": "none",
+                "output_artifact": "stdout",
+            }],
+        })
+        ids = self.rule_ids(self.run_checker(tmp))
+        self.assertIn("H008", ids)
+
+    def test_approved_command_absolute_cwd_is_invalid_config(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "approved_commands": [{
+                "id": "elsewhere", "argv": ["make", "check"],
+                "cwd": "/tmp", "allowed_env": [], "network": "none",
+                "output_artifact": "stdout",
+            }],
+        })
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+    def test_symlinked_link_target_outside_checkout_is_not_read(self):
+        """A symlinked doc target outside the checkout must not have its
+        anchors collected; the anchor check reports a finding instead."""
+        outside_dir = os.path.join(tempfile.mkdtemp(prefix="hygiene-out2-"), "docs")
+        self.addCleanup(shutil.rmtree, os.path.dirname(outside_dir), ignore_errors=True)
+        os.makedirs(outside_dir)
+        with open(os.path.join(outside_dir, "linked.md"), "w") as f:
+            f.write("# Outside Heading\n")
+        tmp = self.setup_fixture("clean")
+        os.symlink(os.path.join(outside_dir, "linked.md"),
+                   os.path.join(tmp, "linked.md"))
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("[leak](linked.md#outside-heading)\n")
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H002", ids)
+        messages = " | ".join(f["message"] for f in json.loads(proc.stdout)["findings"]
+                              if f["rule_id"] == "H002")
+        # The anchor must be reported missing because the outside file's
+        # headings were never read.
+        self.assertIn("anchor not found", messages)
+
+
+class ReportingSemanticsTests(FixtureCase):
+    def test_clean_run_reports_all_rules_as_executed(self):
+        """coverage.rules_run means executed rules, not rules with findings."""
+        tmp = self.setup_fixture("clean")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        payload = json.loads(proc.stdout)
+        self.assertEqual(
+            payload["coverage"]["rules_run"],
+            ["H001", "H002", "H003", "H004", "H005", "H006", "H007", "H008"])
+
+    def test_link_findings_report_original_line_numbers(self):
+        """Findings in fence-stripped scans must point at the real file line."""
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("```bash\n[not a link](nope.md)\n```\n")
+            f.write("intro line\n\n[bad](nope.md)\n")
+        with open(os.path.join(tmp, "README.md")) as f:
+            expected_line = next(
+                n for n, line in enumerate(f, 1) if "[bad](nope.md)" in line)
+        proc = self.run_checker(tmp)
+        payload = json.loads(proc.stdout)
+        h002 = [f for f in payload["findings"] if f["rule_id"] == "H002"]
+        self.assertTrue(h002)
+        self.assertTrue(all(f["line"] == expected_line for f in h002), h002)
+
+    def test_missing_declared_security_path_fails(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "require_security_reporting": True,
+            "security_reporting_path": "docs/ABSENT-SECURITY.md",
+        })
+        ids = self.rule_ids(self.run_checker(tmp))
+        self.assertIn("H004", ids)
+
+
 if __name__ == "__main__":
     unittest.main()

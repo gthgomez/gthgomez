@@ -28,7 +28,11 @@ project-by-project index lives in [project-index.md](project-index.md).
 `tools/portfolio_hygiene.py` is an offline, deterministic, standard-library
 Python checker. It reads files only; it never executes README snippets,
 workflow contents, or URLs, and it never touches the network (remote probing
-is a separate trusted mode that does not exist yet).
+is a separate trusted mode that does not exist yet). All file access is
+confined to the checkout given via `--repo`: absolute paths, `..` traversal,
+and symlinked targets that resolve outside the checkout are rejected as
+findings or invalid configuration, and out-of-checkout locations are never
+read or echoed into findings.
 
 ```bash
 python tools/portfolio_hygiene.py check --repo . --config portfolio-manifest.json
@@ -65,5 +69,7 @@ This negative control fails today by construction, and the fixture test
   out of scope until a trusted scheduled mode with allowlists exists.
 - H008 cannot prove arbitrary shell commands work; it only validates the
   registry against real scripts/files. CI executes commands, not the checker.
-- Fixtures do not claim full Markdown-parser coverage; they cover the
-  documented negative controls and the deterministic JSON ordering.
+- `coverage.rules_run` in the JSON report lists the rules that executed, not
+  the rules that found problems; a clean run still reports all eight.
+- Fixture markdown coverage is representative, not exhaustive: fixtures
+  cover the documented negative controls and the deterministic JSON ordering.

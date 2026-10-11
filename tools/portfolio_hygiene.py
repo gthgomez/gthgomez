@@ -102,6 +102,28 @@ class CheckerError(Exception):
     """Invalid configuration or tool failure (exit 2)."""
 
 
+def confine(repo: str, rel: str) -> str | None:
+    """Resolve rel against the checkout, refusing escapes.
+
+    Returns the in-checkout absolute path, or None when rel is absolute,
+    traverses out of the checkout lexically, or resolves through a symlink
+    to a location outside it. Callers must never read the target when None
+    is returned, and must report only the caller-supplied rel path so
+    out-of-checkout locations never leak into findings.
+    """
+    repo_real = os.path.realpath(repo)
+    if os.path.isabs(rel):
+        return None
+    resolved = os.path.normpath(os.path.join(repo, rel))
+    # realpath containment covers lexical traversal and symlinks in one
+    # check, and still accepts a checkout that is itself reached through a
+    # symlink (repo_real is resolved on both sides).
+    real = os.path.realpath(resolved)
+    if not (real == repo_real or real.startswith(repo_real + os.sep)):
+        return None
+    return resolved
+
+
 def sha256_file(path: str) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -141,7 +163,6 @@ class Report:
             "evidence": evidence[:200],
             "suppression": suppression,
         })
-        self.rules_run.add(rule_id)
 
     def finalize(self, repo: str, inspected_source: str) -> dict:
         self.findings.sort(key=lambda f: (f["path"], f["line"],
@@ -152,6 +173,8 @@ class Report:
             "inspected_source": inspected_source,
             "findings": self.findings,
             "coverage": {
+                # Rule IDs of rules that actually executed on this run —
+                # not only the rules that emitted findings.
                 "rules_run": sorted(self.rules_run),
                 "files_scanned": self.files_scanned,
             },
@@ -208,11 +231,19 @@ def check_private_paths(report: Report, config: dict, repo: str,
 
 # ---------------------------------------------------------------- H002/H003
 def strip_fenced(text: str) -> str:
-    out = []
+    stripped, _ = strip_fenced_with_lines(text)
+    return stripped
+
+
+def strip_fenced_with_lines(text: str) -> tuple[str, list[int]]:
+    """Strip fenced code blocks and keep each surviving line's original
+    line number so findings point at the real file line."""
+    out: list[str] = []
+    line_numbers: list[int] = []
     fence = re.compile(r"^\s*(```|~~~)")
     in_fence = False
     marker = ""
-    for line in text.splitlines():
+    for lineno, line in enumerate(text.splitlines(), 1):
         m = fence.match(line)
         if not in_fence and m:
             in_fence = True
@@ -223,7 +254,8 @@ def strip_fenced(text: str) -> str:
             continue
         if not in_fence:
             out.append(line)
-    return "\n".join(out)
+            line_numbers.append(lineno)
+    return "\n".join(out), line_numbers
 
 
 def github_anchor(text: str) -> str:
@@ -263,8 +295,8 @@ def check_links(report: Report, config: dict, repo: str, doc_files: list[str]) -
         base_dir = os.path.dirname(os.path.join(repo, rel))
         with open(os.path.join(repo, rel), "r", encoding="utf-8",
                   errors="replace") as f:
-            text = strip_fenced(f.read())
-        for lineno, line in enumerate(text.splitlines(), 1):
+            text, line_numbers = strip_fenced_with_lines(f.read())
+        for stripped_lineno, line in enumerate(text.splitlines(), 1):
             for _img, _label, target in MARKDOWN_LINK_RE.findall(line):
                 # H003 applies to badge URLs too (they name a workflow file
                 # that must exist locally); network fetching stays out of scope.
@@ -273,7 +305,7 @@ def check_links(report: Report, config: dict, repo: str, doc_files: list[str]) -
                     wf = os.path.join(repo, ".github", "workflows", m.group(1) + ".yml")
                     wf_yml = os.path.join(repo, ".github", "workflows", m.group(1) + ".yaml")
                     if not os.path.isfile(wf) and not os.path.isfile(wf_yml):
-                        report.add("H003", "blocking", rel, lineno,
+                        report.add("H003", "blocking", rel, line_numbers[stripped_lineno - 1],
                                    "workflow badge references a workflow file that "
                                    "does not exist in this checkout", target)
                 if target.startswith(("http://", "https://", "mailto:", "<")):
@@ -285,44 +317,50 @@ def check_links(report: Report, config: dict, repo: str, doc_files: list[str]) -
                 decoded = path_part.replace("%20", " ")
                 if decoded.startswith("file:"):
                     sup = suppression_for(config, "H001", rel)
-                    report.add("H001", "blocking", rel, lineno,
+                    report.add("H001", "blocking", rel, line_numbers[stripped_lineno - 1],
                                "file:// URL in markdown link", target, sup)
                     continue
                 if os.path.isabs(decoded) or decoded.startswith("\\\\"):
-                    report.add("H002", "blocking", rel, lineno,
+                    report.add("H002", "blocking", rel, line_numbers[stripped_lineno - 1],
                                "absolute path link in public docs", target)
                     continue
                 resolved = os.path.normpath(os.path.join(base_dir, decoded))
                 repo_root = os.path.abspath(repo)
                 if not resolved.startswith(repo_root + os.sep) and resolved != repo_root:
-                    report.add("H002", "blocking", rel, lineno,
+                    report.add("H002", "blocking", rel, line_numbers[stripped_lineno - 1],
                                "link escapes the public checkout", target)
                     continue
                 exists_ci, exact_case = resolve_link_target(repo_root, resolved)
                 if exists_ci:
                     if not exact_case:
-                        report.add("H002", "blocking", rel, lineno,
+                        report.add("H002", "blocking", rel, line_numbers[stripped_lineno - 1],
                                    "link target exists but with different case "
                                    "(breaks on case-sensitive filesystems)",
                                    target)
                         continue
                 else:
-                    report.add("H002", "blocking", rel, lineno,
+                    report.add("H002", "blocking", rel, line_numbers[stripped_lineno - 1],
                                "relative link target not found", target)
                     continue
                 if frag:
                     rel_target = os.path.relpath(resolved, repo_root).replace("\\", "/")
                     key = rel_target.lower()
                     if key not in md_cache and rel_target.lower().endswith(DOC_EXTENSIONS):
-                        try:
-                            with open(resolved, "r", encoding="utf-8",
-                                      errors="replace") as f:
-                                md_cache[key] = collect_anchors(f.read())
-                        except OSError:
+                        if os.path.realpath(resolved).startswith(
+                                os.path.realpath(repo_root) + os.sep):
+                            try:
+                                with open(resolved, "r", encoding="utf-8",
+                                          errors="replace") as f:
+                                    md_cache[key] = collect_anchors(f.read())
+                            except OSError:
+                                md_cache[key] = set()
+                        else:
+                            # Symlinked target resolves outside the checkout;
+                            # never read or leak its contents.
                             md_cache[key] = set()
                     anchors = md_cache.get(key)
                     if anchors is not None and frag not in anchors:
-                        report.add("H002", "blocking", rel, lineno,
+                        report.add("H002", "blocking", rel, line_numbers[stripped_lineno - 1],
                                    "markdown anchor not found in target document",
                                    target)
 
@@ -379,11 +417,11 @@ def check_license_policy(report: Report, config: dict, repo: str) -> None:
                    "license file does not match the declared open-source policy",
                    policy)
     if config.get("require_security_reporting"):
-        if not (os.path.isfile(os.path.join(repo, "SECURITY.md"))
-                or config.get("security_reporting_path")):
-            report.add("H004", "blocking", "SECURITY.md", 0,
-                       "sensitive repository requires a security-reporting path",
-                       "")
+        sec_rel = config.get("security_reporting_path") or "SECURITY.md"
+        if not os.path.isfile(os.path.join(repo, sec_rel)):
+            report.add("H004", "blocking", sec_rel, 0,
+                       "sensitive repository requires a security-reporting "
+                       "path and the declared file does not exist", sec_rel)
 
 
 # ---------------------------------------------------------------- H005
@@ -439,7 +477,12 @@ def check_evidence(report: Report, config: dict, repo: str, head: str | None) ->
         rel = entry.get("path")
         if not rel:
             raise CheckerError("evidence_links entry missing 'path'")
-        full = os.path.join(repo, rel)
+        full = confine(repo, rel)
+        if full is None:
+            report.add("H006", "blocking", rel.replace("\\", "/"), 0,
+                       "evidence receipt path escapes the repository; the "
+                       "file was not read", rel.replace("\\", "/"))
+            continue
         current = bool(entry.get("current", False))
         if not os.path.isfile(full):
             report.add("H006", "blocking", rel, 0,
@@ -483,8 +526,8 @@ def check_evidence(report: Report, config: dict, repo: str, head: str | None) ->
                        json.dumps(chk.get("name", "?")))
         # Digest verification for artifacts present in the checkout.
         for art_rel, digest in (receipt.get("artifact_hashes") or {}).items():
-            art_full = os.path.normpath(os.path.join(repo, art_rel))
-            if not art_full.startswith(os.path.abspath(repo) + os.sep):
+            art_full = confine(repo, art_rel)
+            if art_full is None:
                 report.add("H006", "blocking", rel, 0,
                            "artifact hash entry escapes the repository", art_rel)
                 continue
@@ -519,15 +562,17 @@ def check_volatile_prose(report: Report, config: dict, repo: str,
             continue
         with open(os.path.join(repo, rel), "r", encoding="utf-8",
                   errors="replace") as f:
-            for lineno, line in enumerate(strip_fenced(f.read()).splitlines(), 1):
-                for pattern, kind in VOLATILE_PATTERNS:
-                    if pattern.search(line):
-                        sup = suppression_for(config, "H007", rel)
-                        report.add("H007", "warning", rel, lineno,
-                                   f"{kind} drifts unless generated or attached "
-                                   "to immutable dated evidence",
-                                   line.strip(), sup)
-                        break
+            stripped, line_numbers = strip_fenced_with_lines(f.read())
+        for stripped_lineno, line in enumerate(stripped.splitlines(), 1):
+            for pattern, kind in VOLATILE_PATTERNS:
+                if pattern.search(line):
+                    sup = suppression_for(config, "H007", rel)
+                    report.add("H007", "warning", rel,
+                               line_numbers[stripped_lineno - 1],
+                               f"{kind} drifts unless generated or attached "
+                               "to immutable dated evidence",
+                               line.strip(), sup)
+                    break
 
 
 # ---------------------------------------------------------------- H008
@@ -544,7 +589,11 @@ def check_commands(report: Report, config: dict, repo: str) -> None:
         argv = cmd["argv"]
         if not isinstance(argv, list) or not argv:
             raise CheckerError(f"approved command '{cmd['id']}' argv must be a non-empty list")
-        cwd = os.path.join(repo, cmd.get("cwd", "."))
+        cwd = confine(repo, cmd.get("cwd", "."))
+        if cwd is None:
+            raise CheckerError(
+                f"approved command '{cmd['id']}' cwd escapes the repository: "
+                f"{cmd.get('cwd')}")
         # The checker does not execute commands. It only verifies that the
         # registry references things that exist: npm/pnpm script names against
         # package.json, and repository file arguments against the checkout.
@@ -561,8 +610,26 @@ def check_commands(report: Report, config: dict, repo: str) -> None:
                                f"script '{token}' that package.json does not "
                                "define", token)
                 continue
+            if isinstance(token, str) and (re.match(r"^[A-Za-z]:[\\/]", token)
+                                           or token.startswith("\\\\")):
+                # Windows-style absolute paths never match the file-token
+                # regex below (no colon/backslash), so flag them here.
+                report.add("H008", "blocking", "portfolio-manifest.json", 0,
+                           f"approved command '{cmd['id']}' references a file "
+                           "outside the checkout via an absolute path", token)
+                continue
             if isinstance(token, str) and re.match(r"^[\w./\-]+\.(py|json|md|ya?ml|toml|gradle|kts)$", token):
-                if not os.path.isfile(os.path.join(cwd, token)):
+                if os.path.isabs(token):
+                    report.add("H008", "blocking", "portfolio-manifest.json", 0,
+                               f"approved command '{cmd['id']}' references a file "
+                               "outside the checkout via an absolute path", token)
+                    continue
+                token_full = confine(repo, os.path.join(cmd.get("cwd", "."), token))
+                if token_full is None:
+                    report.add("H008", "blocking", "portfolio-manifest.json", 0,
+                               f"approved command '{cmd['id']}' references a file "
+                               "outside the checkout", token)
+                elif not os.path.isfile(token_full):
                     report.add("H008", "blocking", "portfolio-manifest.json", 0,
                                f"approved command '{cmd['id']}' references a file "
                                "that does not exist in the checkout", token)
@@ -578,7 +645,10 @@ def doc_files_for(config: dict, repo: str) -> list[str]:
         raise CheckerError("config missing non-empty 'public_entrypoints' list")
     files: set[str] = set()
     for entry in entries:
-        full = os.path.join(repo, entry)
+        full = confine(repo, entry)
+        if full is None:
+            raise CheckerError(
+                f"public entrypoint escapes the repository: {entry}")
         if os.path.isdir(full):
             for root, _dirs, names in os.walk(full):
                 for name in sorted(names):
@@ -607,6 +677,10 @@ def run_check(repo: str, config_path: str, fmt: str, head_override: str | None) 
     try:
         docs = doc_files_for(config, repo)
         report.files_scanned = len(docs)
+        # coverage.rules_run must reflect executed rules, not only rules
+        # that happened to emit findings on this run.
+        report.rules_run.update(
+            ("H001", "H002", "H003", "H004", "H005", "H006", "H007", "H008"))
         check_private_paths(report, config, repo, docs)
         check_links(report, config, repo, docs)
         check_license_policy(report, config, repo)
