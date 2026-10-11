@@ -1,7 +1,8 @@
 # Project Index
 
-Derived from repository manifests and immutable evidence receipts — not from
-copied status prose. Status here is limited to what public source can
+Maintained by hand until PF04 derives it from per-repo manifests. License
+labels are checked against each repository's LICENSE file at update time
+(most recently 2026-10-11). Status here is limited to what public source can
 verify; per-project qualification detail lives in each repository.
 
 | Project | Type | License | Public verification surface |
@@ -12,7 +13,7 @@ verify; per-project qualification detail lives in each repository.
 | MonteCarloLedger-Android | Public source | All rights reserved | Repo source |
 | Scout | Open source | MIT | Repo source, v0.6.2 release, CI, ADRs |
 | PrismLocal | Open source | Apache-2.0 | Repo source |
-| GBA_Emulator | Open source | Apache-2.0 | Repo source, committed mGBA credibility-matrix baseline |
+| GBA_Emulator | Open source | Apache-2.0 | Repo source, committed mGBA green-suite baseline |
 | GbaEmulatorAndroid | Open source | Apache-2.0 | Repo source |
 | ProofPath | Public source | All rights reserved | Repo source |
 | DragonWake | Public source | All rights reserved | Repo source; status tracked in its README |
@@ -31,6 +32,9 @@ verify; per-project qualification detail lives in each repository.
   green status: several projects deliberately track red or BLOCKED
   qualification lanes (for example GBA_Emulator's not-all-green suites).
 - Open-source vs proprietary labels follow each repository's LICENSE; the
-  hygiene checker (H004) verifies that this labeling stays coherent.
+  labels in this hand-maintained table were verified against those files on
+  the date above. The hygiene checker's H004 rule keeps this repository's
+  own LICENSE and manifest policy coherent; it does not yet cross-check
+  every row of this table.
 - This index is maintained by hand until PF04 derives it from per-repo
   manifests; discrepancies found by the checker are blocking findings.

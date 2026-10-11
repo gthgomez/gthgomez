@@ -7,43 +7,53 @@ I design and ship backend infrastructure with a focus on reliability and correct
 
 Beyond that core, I build in public across mobile and games: an on-device Android LLM host, a Game Boy Advance emulator core, and a few strategy and RPG prototypes. The through-line is the same — a preference for deterministic behavior, explicit boundaries, and claims you can verify against the linked repositories instead of take on faith. Where a claim below is not verifiable from public source, it is labeled as such.
 
+How I make and check claims: [docs/how-i-build.md](docs/how-i-build.md) · Project index with licenses: [docs/project-index.md](docs/project-index.md)
+
 ---
 
 ## Featured Projects
 
-**[Babel](https://github.com/gthgomez/Babel)**
-AI systems fail in production not because the model is wrong, but because agent behavior is inconsistent, unversioned, and impossible to audit. Babel is an open-source agent harness for real software work: a local coding agent with a conversational **chat** loop, explicit **plan** and **deep** modes, and an inspectable Prompt OS underneath. Around the model it composes a deterministic control surface — controller gates, mode policies, isolation profiles, revision-bound verification, completion authority, and hash-linked evidence — so the operating instructions stay visible and testable. *(Apache-2.0)*
+**[Babel](https://github.com/gthgomez/Babel)** *(Apache-2.0)* — An open-source agent harness for real software work: a local coding agent with a conversational **chat** loop, explicit **plan** and **deep** modes, and an inspectable Prompt OS composed from a versioned instruction catalog. Around the model sits a deterministic control surface — approval gates, mode policies, Docker isolation profiles, revision-bound evidence receipts, and a completion gate that verifies work against a specific repository revision instead of trusting the model's say-so.
 
-**[Prismatix](https://github.com/gthgomez/Prismatix)**
-Running every prompt through the most capable model is expensive and slow. Prismatix is a cost-aware multi-provider AI chat client: each request is classified into a routing role and mapped to a curated, priced model through the OpenCode model hub, and the UI explains every choice. Cost safety is fail-closed — if a price is unknown, the request is rejected rather than silently re-routed to something more expensive. One normalized SSE stream spans every gateway and protocol. Direct Anthropic/OpenAI/Gemini/NVIDIA/DeepInfra routes remain as an explicit legacy fallback, not the default path. *(MIT)*
+- *Demonstrated:* modes and catalog composition in `babel-cli/src/interactive/`; revision-bound receipts in `babel-cli/src/evidence/`; regression-gate suites tracked in `REGRESSION_LEDGER.md`; a tag-gated release workflow that builds a bundle in CI for manual owner review and publication ([latest release](https://github.com/gthgomez/Babel/releases/latest)).
+- *Limitation:* end-to-end output reproducibility is a design goal, not a tested guarantee — provider-side model output is treated as non-reproducible. The governed request path is heavier than a bare model call.
 
-**[MonteCarlo-Ledger](https://github.com/gthgomez/MonteCarlo-Ledger)**
-Personal finance software that rounds incorrectly or simulates with too few runs gives you false confidence in your projections. MonteCarlo-Ledger is a local-first finance CLI and API with a ledger-first SQLite core that stores monetary values as integer cents — eliminating floating-point rounding errors at the data layer — and runs bounded Monte Carlo simulations to produce risk-aware projections grounded in variance, not averages. The companion [Android app](https://github.com/gthgomez/MonteCarloLedger-Android) adds bill pacing and AES-GCM encrypted backups (encrypted backups, not an encrypted live database). *(MIT)*
+**[Prismatix](https://github.com/gthgomez/Prismatix)** *(MIT)* — A cost-aware multi-provider AI chat client. Each request is classified into a routing role and mapped to a curated, priced model through the OpenCode model hub, and the UI explains every choice. Cost safety is fail-closed: an unknown or expired price rejects the request rather than silently re-routing to something more expensive, and when a provider is unavailable, fallback candidates more expensive than the decided model are skipped. One normalized SSE stream spans every gateway; direct Anthropic/OpenAI/Gemini/NVIDIA/DeepInfra routes remain as an explicit legacy fallback, not the default path. Live app: <https://prismatix-app.vercel.app>.
 
-**[Scout](https://github.com/gthgomez/Scout)** *(MIT)*
-Most developers have no systematic way to find which open-source projects are actively paying for help. Scout is a local CLI that finds paid open-source bounty candidates and packages each one into artifacts a coding agent can pick up and execute — Cursor, Claude Code, Codex, Gemini, or anything else able to follow a runbook. Policy gates are enforced against Scout's own operations rather than trusted to the external agent, and the work stays local. This is the most complete open-source project on the account: CI, `CONTRIBUTING.md`, `CHANGELOG.md`, `.editorconfig`, a Dockerfile, architecture ADRs under `docs/`, and a shipped [v0.6.2 release](https://github.com/gthgomez/Scout/releases/tag/v0.6.2).
+- *Demonstrated:* fail-closed pricing in `supabase/functions/router/pricing_registry.ts`; cheaper-only provider fallback in `supabase/functions/router/provider_availability.ts`; per-answer routing disclosure (`X-Route-Decision`, cost-estimate headers); SSE normalization in `supabase/functions/router/sse_normalizer.ts`.
+- *Limitation:* the complexity score is keyword/regex heuristics with tuned thresholds — it needs ongoing calibration, and adds latency on the scoring step.
+
+**[MonteCarlo-Ledger](https://github.com/gthgomez/MonteCarlo-Ledger)** *(MIT)* — A local-first finance CLI and API with a ledger-first SQLite core that stores monetary values as integer cents — no floating-point arithmetic at the data layer — and projects income and expenses over a configurable horizon (default 90 days) using seeded Monte Carlo simulations (default 500 runs) with a configurable quantile, so risk comes from a distribution, not an average. The companion [Android app](https://github.com/gthgomez/MonteCarloLedger-Android) adds bill pacing and AES-GCM encrypted backups (encrypted backups, not an encrypted live database) with no network permission.
+
+- *Demonstrated:* integer-cents schema in `monte_carlo_ledger/schema.sql`; integer-safety tests in `tests/test_int_safety.py`; seeded `SplitMix64` PRNG in `monte_carlo_ledger/contract/prng.py`; safe-to-spend computed from the Monte Carlo minimums distribution at the configured quantile (`monte_carlo_ledger/contract/engine.py`, decision MCD-0008).
+- *Limitation:* the simulation core never reads a clock — `as_of` is always an explicit input — but the HTTP layer defaults `as_of` to today, so API runs are date-dependent when the caller omits it (see the repo's determinism notes). No multi-currency support, by design.
+
+**[Scout](https://github.com/gthgomez/Scout)** *(MIT)* — A local CLI that finds paid open-source bounty candidates and packages each one into artifacts a coding agent can pick up and execute — Cursor, Claude Code, Codex, Gemini, or anything else able to follow a runbook. Policy gates are enforced against Scout's own operations (pre-execution checks against an egress allowlist, not runtime packet filtering); discovery reads public GitHub/Algora APIs, and the bounty work itself runs locally.
+
+- *Demonstrated:* shipped [v0.6.2 release](https://github.com/gthgomez/Scout/releases/tag/v0.6.2), CI, `CONTRIBUTING.md`, `CHANGELOG.md`, `.editorconfig`, a Dockerfile, and architecture docs under [`docs/architecture/`](https://github.com/gthgomez/Scout/tree/main/docs/architecture); policy enforcement in `src/scout/policy.js`.
+- *Limitation:* Scout's own honesty note in `src/scout/network-design.js` says it does not enforce packet-level egress filtering or observe runtime traffic.
 
 ---
 
 ## More Projects
 
-**[PrismLocal](https://github.com/gthgomez/PrismLocal)** — Android app for private, on-device GGUF LLM inference. Embeds a C++20 `llama.cpp` runtime behind a thread-safe JNI bridge, with chat, tool dispatch, and local document retrieval (RAG). *(Apache-2.0)*
+**[PrismLocal](https://github.com/gthgomez/PrismLocal)** — Android app for private, on-device GGUF LLM inference. Embeds a C++20 `llama.cpp` runtime behind a thread-safe JNI bridge, with chat, tool dispatch, and local document retrieval (RAG). Inference is on-device; the app itself can use an optional cloud endpoint. *(Apache-2.0)*
 
-**[GBA_Emulator](https://github.com/gthgomez/GBA_Emulator)** — Portable Game Boy Advance emulator core (C++17), validated against 13 public mGBA test suites with a committed regression baseline and a credibility matrix. *(Apache-2.0)*
+**[GBA_Emulator](https://github.com/gthgomez/GBA_Emulator)** — Portable Game Boy Advance emulator core (C++17), validated against 13 public mGBA test suites — 11 green, 2 not full (`misc-edge`, `timing`) — with a committed green-suite baseline and credibility-matrix tooling. Physical-device soak runs have recorded audio/pacing failures; device qualification is tracked openly in the repo. *(Apache-2.0)*
 
 **[GbaEmulatorAndroid](https://github.com/gthgomez/GbaEmulatorAndroid)** — Android development shell for the GBA_Emulator core: Compose UI, SAF ROM loading, a SurfaceView 240x160 viewport, Oboe audio, and a JNI/CMake bridge into the sibling C++ core. *(Apache-2.0)*
 
-**[MonteCarloLedger-Android](https://github.com/gthgomez/MonteCarloLedger-Android)** — Kotlin/Compose financial ledger app focused on deterministic forecasting, bill pacing, and encrypted backups. No network dependency. *(Public source, all rights reserved)*
+**[MonteCarloLedger-Android](https://github.com/gthgomez/MonteCarloLedger-Android)** — Kotlin/Compose financial ledger app focused on deterministic forecasting, bill pacing, and AES-GCM encrypted backups. Manifest declares no internet permission. *(Public source, all rights reserved)*
 
 **[ProofPath](https://github.com/gthgomez/ProofPath)** — Offline-first React Native learning system that turns lessons into reviewer-ready portfolio evidence, built around active engineering exercises instead of passive content. *(Public source, all rights reserved)*
 
-**[DragonWake](https://github.com/gthgomez/DragonWake)** — Multiplayer web MMORTS prototype in active development: async city builder plus map combat, with a server-derived Dragon Presence lifecycle and canonical save migration. Status (alpha/beta, campaign and branch qualification) is tracked in the repo README; real database and device claims require separate receipts there. *(Public source, all rights reserved)*
+**[DragonWake](https://github.com/gthgomez/DragonWake)** — Multiplayer web MMORTS prototype in active development: async city builder plus map combat, with a server-derived Dragon Presence lifecycle and canonical save migration. Status (prototype alpha, campaign and branch qualification) is tracked in the repo README; real database and device claims require separate receipts there. *(Public source, all rights reserved)*
 
-**[Orbitscar](https://github.com/gthgomez/Orbitscar)** — Clean-room sci-fi strategy prototype: a deterministic headless battle/colony simulation in one package, declarative content validation in another, and an accessible DOM command surface beside a Phaser tactical view. *(Public source, all rights reserved)*
+**[Orbitscar](https://github.com/gthgomez/Orbitscar)** — Clean-room sci-fi strategy prototype: a deterministic headless battle/colony simulation package, declarative content validation, and an accessible DOM command surface beside a Phaser tactical view. *(Public source, all rights reserved)*
 
 **[ManaNet](https://github.com/gthgomez/ManaNet)** — Cyber-themed tower defense game and a Godot 4.6 / GDScript port of the Python/Kivy TowerDefenseKivy. *(Public source, all rights reserved)*
 
-**[GravityPivot](https://github.com/gthgomez/GravityPivot)** — Hyper-casual physics space-navigation game: tether to gravity anchors to orbit, swing, and sling through an infinite cave. Refactored out of a single-file prototype into DI-decoupled modules on TypeScript + Vite, with Vitest coverage. *(Public source, all rights reserved)*
+**[GravityPivot](https://github.com/gthgomez/GravityPivot)** — Hyper-casual physics space-navigation game: tether to gravity anchors to orbit, swing, and sling through an infinite cave. Refactored out of a single-file prototype into engine/renderer/audio/ui modules on TypeScript + Vite, with Vitest coverage. *(Public source, all rights reserved)*
 
 **[reliquary](https://github.com/gthgomez/reliquary)** — Medieval-fantasy monster-binding RPG prototype: elemental battles, creature evolution, binding, party and box storage, saves, and keyboard/touch controls. *(Public source, all rights reserved)*
 
@@ -64,101 +74,39 @@ Privacy compliance is a legal requirement, but most engineering teams have no sy
 
 ---
 
-## Proof of Work
+## How to Verify
 
-These projects are designed to be verifiable, not just described. Start with the live surfaces:
+These projects are designed to be inspectable, not just described. Entry points:
 
 - **GPCGuard** — live product: <https://www.gpcguard.app> (private repo — product surface only, no public source)
-- **Prismatix** — live app: <https://prismatix-app.vercel.app> · routing and cost behavior documented in the [repo README](https://github.com/gthgomez/Prismatix#auto-routing--cost-safety--what-actually-happens)
-- **Babel** — [latest release](https://github.com/gthgomez/Babel/releases/latest) and a public release gate in CI
-- **Scout** — [v0.6.2 release](https://github.com/gthgomez/Scout/releases/tag/v0.6.2), CI, `CONTRIBUTING.md`, and architecture ADRs in [`docs/architecture/`](https://github.com/gthgomez/Scout/tree/main/docs/architecture)
-- **GBA_Emulator** — mGBA test-suite results with a committed [credibility matrix baseline](https://github.com/gthgomez/GBA_Emulator): build/regression, accuracy, and device qualification are tracked separately; not all suites are green (e.g. a misc-edge suite remains red), and older physical-device runs recorded audio/pacing failures
+- **Prismatix** — live app: <https://prismatix-app.vercel.app> · [routing and cost behavior](https://github.com/gthgomez/Prismatix#auto-routing--cost-safety--what-actually-happens) documented in the repo README
+- **Babel** — [latest release](https://github.com/gthgomez/Babel/releases/latest); the release workflow builds tag bundles in CI and the owner publishes the reviewed draft
+- **Scout** — [v0.6.2 release](https://github.com/gthgomez/Scout/releases/tag/v0.6.2), CI, `CONTRIBUTING.md`, and architecture docs
+- **GBA_Emulator** — committed [green-suite baseline](https://github.com/gthgomez/GBA_Emulator); build/regression, accuracy, and device qualification are tracked separately, and not all suites are green
 - **Babel origin site** — <https://babel-origin-site.vercel.app>
 
-Then read how each behaves under the hood.
-
-### Prismatix — model routing in practice
-
-**What actually happens:**
-
-- A simple query (e.g. "summarize this text") is routed to an `economy`/`fast` role backed by a low-cost model
-- A complex task (e.g. code generation or multi-step reasoning) is routed to a `strong`/`max` role
-- Every Auto-routed answer exposes the chosen role, model, gateway, reason, whether a fallback was used, and the estimated cost basis
-- An unknown price fails the request closed rather than quietly spending more; provider fallback may only re-route to a *cheaper* priced model
-- All responses stream through a single normalized SSE interface regardless of which provider handles the request
-
-**What to look for in the code:**
-
-- Role-based routing decisions with deterministic in-role fallbacks
-- No provider-specific branching in client-facing code
-- Consistent streaming output regardless of backend model
-- Cost safety enforced server-side (`supabase/functions/router/pricing_registry.ts`)
-
-### Babel — deterministic agent execution
-
-**What actually happens:**
-
-- The selected Prompt OS stack is previewable before any model acts
-- The stack is composed into a validated, catalog-backed instruction plan before execution begins
-- Governance layers decide what a mode may do: controller gates, isolation profiles, and mode policies
-- Completion is verified against a specific repository revision rather than asserted by the model
-- If the plan is incomplete, underspecified, or violates interface contracts, execution is blocked with an explicit failure state — not silently degraded
-
-**What to look for in the code:**
-
-- Preview → Compose → Validate → Execute flow on every run
-- No direct model execution without a validated instruction plan
-- Regression and release-gate tests that catch behavioral drift before it ships
-- Reproducible outputs given identical inputs and catalog state
-
-### MonteCarlo-Ledger — correctness over convenience
-
-**What actually happens:**
-
-- All monetary values are stored as integer cents — no floating-point arithmetic at the data layer
-- Income and expenses are projected forward across a 90-day horizon
-- Bounded Monte Carlo simulations with a seeded RNG and a configurable percentile (e.g. a worst-10-percent bucket) stress-test each projection
-- The safe-to-spend endpoint currently reports a value derived from the baseline forecast rather than the worst-case Monte Carlo distribution — the deeper simulation output lives in the CLI/API, not that endpoint
-
-**What to look for in the code:**
-
-- Integer-only money storage throughout — no `float` for currency values
-- Deterministic simulation seeding — identical inputs plus the same seed reproduce projections, though scenario generation currently reads the system clock, so runs are date-dependent by design; see the repo's determinism notes
-- Clear separation between raw ledger data and derived projection output
-- Ledger-first accounting: balances are derived, never treated as an editable source of truth
+For the code behind the headline claims, each featured project above names the files that implement its cost-safety, gating, correctness, and evidence behavior.
 
 ---
 
-## Design Decisions
+## Design Principles
 
-These projects share a set of properties that I actively design toward:
+Shared properties I actively design toward — aspirations I hold projects to, not claimed properties of every file:
 
-**Determinism over convenience**
-Same input should produce the same output. Variability is controlled and observable, not accidental.
-
-**Fail-fast over silent degradation**
-Invalid states are blocked and surfaced with explicit reasoning. "Best effort" results that hide errors are worse than hard failures.
-
-**Cost as a first-class constraint**
-Routing decisions, budget enforcement, and simulation design are all built with resource usage in mind — not added as an afterthought.
-
-**Correctness enforced at the lowest level**
-Integer money storage, catalog-backed instruction plans, priced routing registries. Correctness bugs at the data layer propagate everywhere; fix them at the source.
+**Determinism over convenience** — same input, same output; variability is controlled and observable.
+**Fail-fast over silent degradation** — invalid states are blocked and surfaced with explicit reasoning.
+**Cost as a first-class constraint** — routing, budgets, and simulation design account for resource usage from the start.
+**Correctness at the lowest level** — integer money storage, catalog-backed instruction plans, priced routing registries.
 
 ---
 
 ## Key Tradeoffs
 
-Specific decisions made across these projects — what I chose, what I ruled out, and where the current design has limits.
+**Prismatix: runtime routing over static config; safety over availability.** Role-based scoring at request time adapts to prompt length and mixed intent, at the cost of a scoring step that needs tuning. Fail-closed cost safety means occasional hard failures when a price is unknown — chosen over silent fallback to costlier providers.
 
-**Prismatix: runtime routing over static configuration, safety over availability**
-Routing could have been a config file — map task types to models at deploy time. I built role-based scoring at request time instead because static config can't adapt to prompt length, context depth, or mixed-intent queries. The tradeoff is added latency on the scoring step and a complexity score that needs tuning. The harder call was fail-closed cost safety: when a model's price is unknown, or discovery returns no usable priced model for a role, the request fails with a readable error instead of silently falling back to a costlier provider. That means occasional hard failures, but no silent cost surprises. Provider fallback is deliberately constrained to cheaper priced models; broad automatic failover without proper logging first would make failures harder to diagnose, not easier.
+**Babel: a governed agent loop over a bare model call.** Validated, catalog-backed instruction plans and explicit gates make behavior auditable, at the cost of a heavier request path and more moving parts. Provider-side outputs are not reproducible, and the harness does not claim otherwise.
 
-**Babel: a governed agent loop over a bare model call**
-The simplest agent is a model with tools and a loop. Babel composes a validated, catalog-backed instruction plan and wraps execution in explicit gates because unaudited behavior is invisible until it reaches production. The tradeoff is a heavier request path and more moving parts. Where it breaks: the catalog resolver assumes instruction entries are stable between deployments — hot-swapping catalog entries mid-session is not currently safe.
-
-**MonteCarlo-Ledger: integer cents over decimal types**
-Most finance software uses `DECIMAL` or `float` for readability. I use integer cents because rounding behavior in `DECIMAL` arithmetic is database-specific and `float` accumulates error across summation. The tradeoff is that every input and display layer must convert explicitly — there's no implicit formatting. What I intentionally did not build: multi-currency support. Adding it correctly requires exchange-rate versioning tied to transaction timestamps, which is a separate system; adding it naively would corrupt historical projections.
+**MonteCarlo-Ledger: integer cents over decimal types.** `DECIMAL` rounding is database-specific and `float` accumulates error; integer cents make every conversion explicit at the input/display layers. Multi-currency support was intentionally not built — doing it correctly requires exchange-rate versioning tied to transaction timestamps, and doing it naively would corrupt historical projections.
 
 ---
 
@@ -166,7 +114,7 @@ Most finance software uses `DECIMAL` or `float` for readability. I use integer c
 
 - Add full request/response tracing dashboards for Prismatix (latency and cost per route, per provider)
 - Introduce persistent execution logs and replay tooling for Babel to support post-hoc debugging
-- Expand MonteCarlo-Ledger with real-time ingestion and user-configurable scenario parameters
+- End-to-end reproducibility tests for Babel's pipeline, so reproducibility is a tested property rather than a goal
 - Replace the remaining emulator interactive oracles with deterministic frame-hash coverage as the GBA core matures
 
 ---
@@ -183,8 +131,6 @@ Most finance software uses `DECIMAL` or `float` for readability. I use integer c
 | **[MonteCarlo-Ledger](https://github.com/gthgomez/MonteCarlo-Ledger)** | Data correctness — determinism, integer money, clean schema |
 | **[GBA_Emulator](https://github.com/gthgomez/GBA_Emulator)** | Low-level rigor — test-oracle evidence, emulation correctness |
 | **[DragonWake](https://github.com/gthgomez/DragonWake)** / **[Orbitscar](https://github.com/gthgomez/Orbitscar)** | Game systems — simulation, multiplayer, deterministic state |
-
-Babel and Prismatix are the most architecturally complex. Scout is the best-documented open-source project. GPCGuard is the most complete product, though its source and audit are not public, so that claim rests on the live product alone. PrismLocal and GBA_Emulator show the systems-native side. MonteCarlo-Ledger is smaller but demonstrates a data-correctness mindset that shows up consistently across all of the work.
 
 ---
 
