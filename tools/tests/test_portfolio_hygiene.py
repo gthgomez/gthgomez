@@ -549,5 +549,71 @@ class ReportingSemanticsTests(FixtureCase):
         self.assertIn("H004", ids)
 
 
+class SameDocumentAnchorTests(FixtureCase):
+    def test_broken_same_document_fragment_fails(self):
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n## Target Section\n\n[bad](#no-such-anchor)\n[good](#target-section)\n")
+        proc = self.run_checker(tmp)
+        payload = json.loads(proc.stdout)
+        h002 = [f for f in payload["findings"] if f["rule_id"] == "H002"]
+        self.assertTrue(any("not found in this document" in f["message"]
+                            for f in h002), h002)
+        # The valid same-document anchor must not be flagged.
+        self.assertEqual(len(h002), 1, h002)
+
+    def test_valid_same_document_fragment_passes(self):
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n[good](#clean-fixture)\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
+class ConfigValidationTests(FixtureCase):
+    def test_missing_public_entrypoint_is_invalid_config(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "public_entrypoints": ["README.md", "docs/MISSING.md"],
+        })
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("public entrypoint not found", proc.stderr)
+
+    def test_entrypoint_without_markdown_extension_is_invalid_config(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "public_entrypoints": ["LICENSE"],
+        })
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+    def test_version_pattern_without_capture_group_is_invalid_config(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "version_checks": [{
+                "file": "version.json",
+                "pattern": r'"version":\s*"[^"]+"',
+                "domain": "core", "status": "released",
+                "expected_version": "1.2.3",
+            }],
+        })
+        with open(os.path.join(tmp, "version.json"), "w") as f:
+            f.write('{"version": "1.2.3"}')
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("no capture group", proc.stderr)
+
+    def test_version_pattern_matching_nothing_is_a_finding(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "version_checks": [{
+                "file": "version.json",
+                "pattern": r"no such text (here)",
+                "domain": "core", "status": "unreleased",
+            }],
+        })
+        with open(os.path.join(tmp, "version.json"), "w") as f:
+            f.write('{"version": "1.2.3"}')
+        ids = self.rule_ids(self.run_checker(tmp))
+        self.assertIn("H005", ids)
+
+
 if __name__ == "__main__":
     unittest.main()
