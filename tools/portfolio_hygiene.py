@@ -313,7 +313,14 @@ def check_links(report: Report, config: dict, repo: str, doc_files: list[str]) -
                 path_part, _, frag = target.partition("#")
                 path_part = path_part.strip()
                 if not path_part:
-                    continue  # same-document fragment
+                    # Same-document fragment: validate against this
+                    # document's own headings.
+                    if frag and frag not in md_cache.get(rel.lower(), set()):
+                        report.add("H002", "blocking", rel,
+                                   line_numbers[stripped_lineno - 1],
+                                   "markdown anchor not found in this document",
+                                   target)
+                    continue
                 decoded = path_part.replace("%20", " ")
                 if decoded.startswith("file:"):
                     sup = suppression_for(config, "H001", rel)
@@ -454,9 +461,18 @@ def check_versions(report: Report, config: dict, repo: str) -> None:
                            "configured pointer", str(exc))
                 continue
         else:
-            m = re.search(vc.get("pattern", r"(.*)"), content)
-            if m:
+            pattern = vc.get("pattern", r"(.*)")
+            m = re.search(pattern, content)
+            if m and m.groups():
                 actual = m.group(1).strip()
+            elif m:
+                raise CheckerError(
+                    f"version_checks pattern for '{rel}' matches but has no "
+                    "capture group to extract the version value")
+            elif "pattern" in vc:
+                report.add("H005", "blocking", rel, 0,
+                           "version pattern matched nothing in the declared "
+                           "source", pattern)
         if actual is None:
             report.add("H005", "blocking", rel, 0,
                        "version value not found in declared source", rel)
@@ -657,6 +673,9 @@ def doc_files_for(config: dict, repo: str) -> list[str]:
                             os.path.join(root, name), repo).replace("\\", "/"))
         elif os.path.isfile(full) and entry.lower().endswith(DOC_EXTENSIONS):
             files.add(entry.replace("\\", "/"))
+        else:
+            raise CheckerError(
+                f"public entrypoint not found or not a Markdown doc: {entry}")
     return sorted(files)
 
 
