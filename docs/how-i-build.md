@@ -10,22 +10,15 @@ project-by-project index lives in [project-index.md](project-index.md).
 I'm a computer science student at SNHU. Python is my strongest programming
 language, and I'm strengthening Java through coursework and practice.
 
-I use coding agents extensively for implementation, tests, documentation
-and investigation. My work includes defining requirements, comparing
-approaches, investigating failures and directing review and verification.
-An agent-authored change is not evidence that I personally wrote it, and
-the technologies used across these projects are not a claim of equal
-hands-on fluency in every stack.
+I define requirements, compare approaches, investigate failures and direct
+review and verification. Coding agents contribute substantial implementation,
+tests, documentation and investigation.
 
-For a project discussion, the useful questions are what I contributed
-directly, what an agent produced, what I can explain and modify, and what
-the available checks actually demonstrate. Commit authorship alone does
-not answer those questions.
+Project discussions should distinguish my direct contributions from
+agent-produced work and connect technical claims to available checks.
 
-The principles below describe the standards I aim to apply. They are not
-a claim that every historical change received every check, that I
-personally wrote all tests or reviewed every line, or that agent review
-replaces independent behavioral verification.
+The principles below are the standards I aim to apply; verification coverage
+varies by project and change.
 
 ## Principles
 
@@ -68,14 +61,13 @@ The registry lists commands; the checker verifies that they reference real
 scripts and files but does not execute them — clean-install CI remains the
 behavioral authority.
 
-## A real positive example
+## Applying these standards
 
-PF01 (this repository) corrected account-level README claims that overstated
-determinism and device qualification. That earlier correction remains in
-Git history. The current landing page is a shorter project introduction;
-implementation details and qualification limits belong in the linked
-project repositories. A public product surface, such as GPCGuard, does not
-by itself verify private source or production reliability.
+This repository uses its hygiene checker to check portfolio documentation.
+The landing page introduces the projects; implementation details and
+qualification limits belong in their linked repositories. Public demos
+illustrate functionality, while source and test evidence support specific
+implementation claims.
 
 ## A real falsifying example
 
