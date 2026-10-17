@@ -5,6 +5,28 @@ SHA, and anything that cannot be verified is labeled as such instead of
 inferred. This page is the working methodology for this account; the
 project-by-project index lives in [project-index.md](project-index.md).
 
+## My role and AI-assisted development
+
+I'm a computer science student at SNHU. Python is my strongest programming
+language, and I'm strengthening Java through coursework and practice.
+
+I use coding agents extensively for implementation, tests, documentation
+and investigation. My work includes defining requirements, comparing
+approaches, investigating failures and directing review and verification.
+An agent-authored change is not evidence that I personally wrote it, and
+the technologies used across these projects are not a claim of equal
+hands-on fluency in every stack.
+
+For a project discussion, the useful questions are what I contributed
+directly, what an agent produced, what I can explain and modify, and what
+the available checks actually demonstrate. Commit authorship alone does
+not answer those questions.
+
+The principles below describe the standards I aim to apply. They are not
+a claim that every historical change received every check, that I
+personally wrote all tests or reviewed every line, or that agent review
+replaces independent behavioral verification.
+
 ## Principles
 
 1. **Claims follow evidence, not the reverse.** A sentence in a README is
@@ -49,10 +71,11 @@ behavioral authority.
 ## A real positive example
 
 PF01 (this repository) corrected account-level README claims that overstated
-determinism and device qualification. The correction is verifiable: each
-changed sentence names its evidence, and claims that cannot be verified from
-public source (for example GPCGuard) are labeled non-public case studies
-rather than implied to be tested.
+determinism and device qualification. That earlier correction remains in
+Git history. The current landing page is a shorter project introduction;
+implementation details and qualification limits belong in the linked
+project repositories. A public product surface, such as GPCGuard, does not
+by itself verify private source or production reliability.
 
 ## A real falsifying example
 
