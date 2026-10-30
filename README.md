@@ -19,7 +19,52 @@ I define requirements, compare approaches, investigate failures and direct revie
 
 ## More to explore
 
-I also work on [on-device Android AI](https://github.com/gthgomez/PrismLocal), [emulation](https://github.com/gthgomez/GBA_Emulator), utilities and game prototypes. See the [project index](docs/project-index.md) for more.
+These are my original public projects, grouped by what you can explore. Links open each repository's current README for its demo media, setup instructions and limitations. A public repository does not imply a hosted or production-ready app; each project retains its own license.
+
+### Developer tools and AI
+
+| Project | What it explores | Interface |
+| --- | --- | --- |
+| [Babel](https://github.com/gthgomez/Babel) | Local coding agents, inspectable workflows and verification | CLI, terminal and desktop |
+| [Scout](https://github.com/gthgomez/Scout) | Bounty-candidate discovery and structured agent handoffs; income performance unestablished | Local CLI |
+| [Prismatix](https://github.com/gthgomez/Prismatix) | Multi-provider AI chat, routing and cost controls | Web app; provider access required for live AI |
+| [PrismLocal](https://github.com/gthgomez/PrismLocal) | Private, on-device GGUF inference and local retrieval | Android; compatible model/device required |
+
+### Games
+
+| Project | What to look for |
+| --- | --- |
+| [Reliquary](https://github.com/gthgomez/reliquary) | Medieval-fantasy monster binding, exploration and creature collection |
+| [GravityPivot](https://github.com/gthgomez/GravityPivot) | Gravity anchors, orbital swings and space navigation |
+| [DragonWake](https://github.com/gthgomez/DragonWake) | Multiplayer web strategy prototype |
+| [Orbitscar](https://github.com/gthgomez/Orbitscar) | Persistent colonies, tactical breaches and deterministic simulation |
+| [ManaNet](https://github.com/gthgomez/ManaNet) | Cyber-themed tower defense in Godot |
+
+### Finance and learning
+
+| Project | What it explores | Interface |
+| --- | --- | --- |
+| [MonteCarlo-Ledger](https://github.com/gthgomez/MonteCarlo-Ledger) | Ledger-first accounting and seeded risk simulations | Python CLI and API |
+| [MonteCarloLedger-Android](https://github.com/gthgomez/MonteCarloLedger-Android) | Offline bill pacing, forecasting and encrypted backups | Android companion |
+| [ProofPath](https://github.com/gthgomez/ProofPath) | CS learning backed by verifiable portfolio evidence | React Native |
+
+### Android utilities
+
+| Project | What it does |
+| --- | --- |
+| [ExactUploadFixer](https://github.com/gthgomez/ExactUploadFixer) | Resizes and compresses images to upload requirements |
+| [WallpaperCropFixer](https://github.com/gthgomez/WallpaperCropFixer) | Crops wallpapers with face detection and EXIF orientation handling |
+| [RGRemote](https://github.com/gthgomez/RGRemote) | Local-network Roku and Google TV remote; paired TV required |
+
+### Emulation and web surfaces
+
+| Project | What to explore |
+| --- | --- |
+| [GBA_Emulator](https://github.com/gthgomez/GBA_Emulator) | Portable C++17 emulator core and documented test baselines; check qualification limits |
+| [GbaEmulatorAndroid](https://github.com/gthgomez/GbaEmulatorAndroid) | Android development shell for the emulator core |
+| [Babel origin site](https://github.com/gthgomez/babel-origin-site) | Babel's web demo and proof surfaces |
+
+This profile is the index for those 18 projects, rather than a runnable app. Forks are excluded. Showcase media and device captures are added per project as they are verified; this index does not claim every capture is complete. See the [project index](docs/project-index.md) for license and evidence notes.
 
 ## Contact
 
