@@ -352,6 +352,15 @@ class ConfigAndToolFailureTests(FixtureCase):
         self.assertEqual(wrapper.returncode, 1)
 
 
+def _safe_symlink(src: str, dst: str, target_is_directory: bool = False) -> None:
+    try:
+        os.symlink(src, dst, target_is_directory=target_is_directory)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314 or "privilege" in str(exc).lower():
+            raise unittest.SkipTest("symlinks require elevated privileges on Windows") from exc
+        raise
+
+
 class CheckoutConfinementTests(FixtureCase):
     """Out-of-checkout targets must never be read, modified, or leaked."""
 
@@ -399,7 +408,7 @@ class CheckoutConfinementTests(FixtureCase):
         outside_file = os.path.join(outside_dir, "artifact.txt")
         with open(outside_file, "w") as f:
             f.write("outside bytes")
-        os.symlink(outside_file, os.path.join(tmp, "artifact.txt"))
+        _safe_symlink(outside_file, os.path.join(tmp, "artifact.txt"))
         receipt = {
             "schema_version": 1, "repository": "fixture/repo",
             "source_sha": HEAD_A, "generated_at_utc": "2026-01-01T00:00:00Z",
@@ -439,7 +448,7 @@ class CheckoutConfinementTests(FixtureCase):
         tmp = self.setup_fixture("clean")
         link = os.path.join(tempfile.mkdtemp(prefix="hygiene-lnk-"), "repo-link")
         self.addCleanup(shutil.rmtree, os.path.dirname(link), ignore_errors=True)
-        os.symlink(tmp, link)
+        _safe_symlink(tmp, link, target_is_directory=True)
         config_path = os.path.join(link, "portfolio-manifest.json")
         proc = subprocess.run(
             [sys.executable, CHECKER, "check", "--repo", link,
@@ -500,8 +509,8 @@ class CheckoutConfinementTests(FixtureCase):
         with open(os.path.join(outside_dir, "linked.md"), "w") as f:
             f.write("# Outside Heading\n")
         tmp = self.setup_fixture("clean")
-        os.symlink(os.path.join(outside_dir, "linked.md"),
-                   os.path.join(tmp, "linked.md"))
+        _safe_symlink(os.path.join(outside_dir, "linked.md"),
+                      os.path.join(tmp, "linked.md"))
         with open(os.path.join(tmp, "README.md"), "a") as f:
             f.write("[leak](linked.md#outside-heading)\n")
         proc = self.run_checker(tmp)

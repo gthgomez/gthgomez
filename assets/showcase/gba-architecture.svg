@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="cpuGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="busGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <linearGradient id="ppuGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <linearGradient id="apuGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#6d28d9" />
+    </linearGradient>
+    <linearGradient id="hostGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899" />
+      <stop offset="100%" stop-color="#be185d" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background container -->
+  <rect width="900" height="480" rx="12" fill="url(#bgGrad)" stroke="#334155" stroke-width="2" />
+
+  <!-- Title bar -->
+  <text x="30" y="42" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="700">GBA_Emulator — C++17 Core Architecture</text>
+  <text x="30" y="64" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13">Cycle-stepped ARM7TDMI processor, memory bus waitstates, scanline PPU rasterizer, and host abstractions</text>
+
+  <!-- ARM7TDMI CPU Block -->
+  <g transform="translate(30, 90)">
+    <rect width="250" height="230" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2" />
+    <rect width="250" height="34" rx="8" fill="url(#cpuGrad)" />
+    <text x="15" y="23" fill="#ffffff" font-family="system-ui, sans-serif" font-size="14" font-weight="700">ARM7TDMI CPU (16.78 MHz)</text>
+    
+    <text x="15" y="60" fill="#e2e8f0" font-family="monospace" font-size="12" font-weight="600">• ARMv4T Dual ISA Decoder</text>
+    <text x="25" y="78" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">32-bit ARM + 16-bit Thumb instructions</text>
+
+    <text x="15" y="105" fill="#e2e8f0" font-family="monospace" font-size="12" font-weight="600">• 3-Stage Pipeline</text>
+    <text x="25" y="123" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Fetch, Decode, Execute with flush logic</text>
+
+    <text x="15" y="150" fill="#e2e8f0" font-family="monospace" font-size="12" font-weight="600">• Banked Register Matrix</text>
+    <text x="25" y="168" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">R0-R15, CPSR, SPSR across 6 modes</text>
+
+    <text x="15" y="195" fill="#e2e8f0" font-family="monospace" font-size="12" font-weight="600">• Exception &amp; IRQ Controller</text>
+    <text x="25" y="213" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">SWI, V-Blank, H-Blank, DMA, Timer interrupts</text>
+  </g>
+
+  <!-- System Bus & Memory Controller (Center) -->
+  <g transform="translate(310, 90)">
+    <rect width="270" height="230" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2" />
+    <rect width="270" height="34" rx="8" fill="url(#busGrad)" />
+    <text x="15" y="23" fill="#ffffff" font-family="system-ui, sans-serif" font-size="14" font-weight="700">Memory Bus &amp; Waitstate Engine</text>
+
+    <text x="15" y="60" fill="#e2e8f0" font-family="monospace" font-size="12" font-weight="600">• 32 KB Fast IWRAM (0 ws, 32-bit)</text>
+    <text x="15" y="85" fill="#e2e8f0" font-family="monospace" font-size="12" font-weight="600">• 256 KB EWRAM (2 ws, 16-bit)</text>
+    <text x="15" y="110" fill="#e2e8f0" font-family="monospace" font-size="12" font-weight="600">• 96 KB VRAM / 1 KB OAM / 1 KB Palette</text>
+    <text x="15" y="135" fill="#e2e8f0" font-family="monospace" font-size="12" font-weight="600">• Cartridge ROM (Waitstates 0/1/2)</text>
+    
+    <rect x="15" y="152" width="240" height="64" rx="4" fill="#0f172a" stroke="#475569" stroke-width="1" />
+    <text x="25" y="172" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11" font-weight="600">DMA &amp; Cascade Timers:</text>
+    <text x="25" y="190" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">4 DMA channels (FIFO / V-Blank / H-Blank)</text>
+    <text x="25" y="206" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">4 reloadable timers with cascade prescalers</text>
+  </g>
+
+  <!-- PPU & APU Subsystems (Right) -->
+  <g transform="translate(610, 90)">
+    <!-- PPU Box -->
+    <rect width="260" height="110" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2" />
+    <rect width="260" height="30" rx="8" fill="url(#ppuGrad)" />
+    <text x="15" y="21" fill="#ffffff" font-family="system-ui, sans-serif" font-size="13" font-weight="700">2D PPU (240x160 Scanline Rasterizer)</text>
+    <text x="15" y="52" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Modes 0–5: Text tiles, Affine rotation/scaling</text>
+    <text x="15" y="70" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">128 Sprites (Affine, Mosaic, Alpha blend)</text>
+    <text x="15" y="88" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Cycle-stepped H-Blank &amp; V-Blank timing</text>
+
+    <!-- APU Box -->
+    <g transform="translate(0, 120)">
+      <rect width="260" height="110" rx="8" fill="#1e293b" stroke="#8b5cf6" stroke-width="2" />
+      <rect width="260" height="30" rx="8" fill="url(#apuGrad)" />
+      <text x="15" y="21" fill="#ffffff" font-family="system-ui, sans-serif" font-size="13" font-weight="700">APU (Audio Processing Unit)</text>
+      <text x="15" y="52" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="11" font-weight="600">4 Legacy PSG Channels: Square 1/2, Wave, Noise</text>
+      <text x="15" y="70" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">2 DirectSound 8-bit FIFO DACs (DMA driven)</text>
+      <text x="15" y="88" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Resampling to 44.1/48 kHz audio stream</text>
+    </g>
+  </g>
+
+  <!-- Bus interconnect arrows -->
+  <line x1="280" y1="205" x2="310" y2="205" stroke="#f59e0b" stroke-width="4" stroke-dasharray="4,2" />
+  <line x1="580" y1="145" x2="610" y2="145" stroke="#10b981" stroke-width="4" stroke-dasharray="4,2" />
+  <line x1="580" y1="265" x2="610" y2="265" stroke="#8b5cf6" stroke-width="4" stroke-dasharray="4,2" />
+
+  <!-- Host Abstraction Layer (Bottom) -->
+  <g transform="translate(30, 340)">
+    <rect width="840" height="110" rx="8" fill="#1e293b" stroke="#ec4899" stroke-width="2" />
+    <rect width="840" height="30" rx="8" fill="url(#hostGrad)" />
+    <text x="20" y="21" fill="#ffffff" font-family="system-ui, sans-serif" font-size="13" font-weight="700">Host Integration &amp; Verification Surfaces</text>
+
+    <!-- Desktop SDL3 -->
+    <rect x="20" y="42" width="250" height="56" rx="4" fill="#0f172a" stroke="#475569" stroke-width="1" />
+    <text x="30" y="60" fill="#f1f5f9" font-family="system-ui, sans-serif" font-size="12" font-weight="600">SDL3 Desktop Host</text>
+    <text x="30" y="76" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Interactive window, frame sync,</text>
+    <text x="30" y="90" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Audio queue, save-state slot manager</text>
+
+    <!-- Android Shell -->
+    <rect x="290" y="42" width="250" height="56" rx="4" fill="#0f172a" stroke="#475569" stroke-width="1" />
+    <text x="300" y="60" fill="#f1f5f9" font-family="system-ui, sans-serif" font-size="12" font-weight="600">Android JNI Bridge (Shell)</text>
+    <text x="300" y="76" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">SurfaceView viewport rendering,</text>
+    <text x="300" y="90" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Oboe low-latency audio, SAF storage</text>
+
+    <!-- Test Harness & Verification -->
+    <rect x="560" y="42" width="260" height="56" rx="4" fill="#0f172a" stroke="#475569" stroke-width="1" />
+    <text x="570" y="60" fill="#f1f5f9" font-family="system-ui, sans-serif" font-size="12" font-weight="600">Core Verifiers &amp; mGBA Test Suites</text>
+    <text x="570" y="76" fill="#10b981" font-family="system-ui, sans-serif" font-size="11" font-weight="600">32/32 local core test verifiers pass</text>
+    <text x="570" y="90" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">11 green public mGBA test suites</text>
+  </g>
+</svg>
