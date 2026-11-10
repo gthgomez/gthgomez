@@ -54,9 +54,10 @@ python tools/portfolio_hygiene.py check --repo . --config portfolio-manifest.jso
 ```
 
 Exit codes: `0` clean, `1` findings, `2` invalid configuration or tool
-failure. Rules H001–H008 cover workstation-path leakage, markdown link and
+failure. Rules H001–H009 cover workstation-path leakage, markdown link and
 anchor resolution, workflow badges, license coherence, version consistency,
-evidence-receipt validity, volatile prose and the approved-command registry.
+evidence-receipt validity, volatile prose, the approved-command registry,
+and showcase manifest validation.
 The registry lists commands; the checker verifies that they reference real
 scripts and files but does not execute them — clean-install CI remains the
 behavioral authority.
@@ -85,6 +86,6 @@ This negative control fails today by construction, and the fixture test
 - H008 cannot prove arbitrary shell commands work; it only validates the
   registry against real scripts/files. CI executes commands, not the checker.
 - `coverage.rules_run` in the JSON report lists the rules that executed, not
-  the rules that found problems; a clean run still reports all eight.
+  the rules that found problems; a clean run reports all executed rules (H001–H009).
 - Fixture markdown coverage is representative, not exhaustive: fixtures
   cover the documented negative controls and the deterministic JSON ordering.

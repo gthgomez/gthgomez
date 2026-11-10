@@ -532,7 +532,7 @@ class ReportingSemanticsTests(FixtureCase):
         payload = json.loads(proc.stdout)
         self.assertEqual(
             payload["coverage"]["rules_run"],
-            ["H001", "H002", "H003", "H004", "H005", "H006", "H007", "H008"])
+            ["H001", "H002", "H003", "H004", "H005", "H006", "H007", "H008", "H009"])
 
     def test_link_findings_report_original_line_numbers(self):
         """Findings in fence-stripped scans must point at the real file line."""
@@ -556,6 +556,121 @@ class ReportingSemanticsTests(FixtureCase):
         })
         ids = self.rule_ids(self.run_checker(tmp))
         self.assertIn("H004", ids)
+
+
+class ShowcaseManifestTests(FixtureCase):
+    """Rule H009 tests covering showcase manifest validation."""
+
+    def _create_showcase_fixture(self, manifest_modifications: dict | None = None,
+                                 config_overrides: dict | None = None,
+                                 create_media: bool = True):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "showcase_manifest": "docs/showcase-manifest.json",
+            **(config_overrides or {})
+        })
+        media_dir = os.path.join(tmp, "assets", "showcase")
+        os.makedirs(media_dir, exist_ok=True)
+        if create_media:
+            with open(os.path.join(media_dir, "demo.png"), "wb") as f:
+                f.write(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR...")
+
+        manifest = {
+            "schema_version": 1,
+            "manifest_name": "showcase-evidence-manifest",
+            "generated_at_utc": "2026-11-10T00:00:00Z",
+            "account": "gthgomez",
+            "flagships": [
+                {
+                    "id": "babel",
+                    "name": "Babel",
+                    "repository": "gthgomez/Babel",
+                    "source_sha": "1dc598e2a2f1de914591570349708a6f01d66479",
+                    "captured_version": "v0.1.0-alpha",
+                    "capture_date": "2026-11-09",
+                    "demonstration_type": "desktop-ui-capture",
+                    "primary_media": "assets/showcase/demo.png",
+                    "supporting_media": [],
+                    "live_url": "https://example.com",
+                    "capture_method": "Screenshot capture on desktop",
+                    "test_evidence": "100% tests passed",
+                    "known_limitations": "Prototype limitations apply",
+                    "verification_status": "CURRENT"
+                }
+            ]
+        }
+        if manifest_modifications:
+            for k, v in manifest_modifications.items():
+                if k == "flagship_0":
+                    manifest["flagships"][0].update(v)
+                else:
+                    manifest[k] = v
+
+        docs_dir = os.path.join(tmp, "docs")
+        os.makedirs(docs_dir, exist_ok=True)
+        with open(os.path.join(docs_dir, "showcase-manifest.json"), "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+        return tmp
+
+    def test_valid_showcase_manifest_passes(self):
+        tmp = self._create_showcase_fixture()
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_missing_showcase_manifest_file_fails(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "showcase_manifest": "docs/missing-manifest.json"
+        })
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+
+    def test_missing_media_file_fails(self):
+        tmp = self._create_showcase_fixture(create_media=False)
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+        findings = json.loads(proc.stdout)["findings"]
+        self.assertTrue(any("does not exist" in f["message"] for f in findings if f["rule_id"] == "H009"))
+
+    def test_invalid_sha_format_fails(self):
+        tmp = self._create_showcase_fixture(manifest_modifications={
+            "flagship_0": {"source_sha": "not-a-valid-git-sha!"}
+        })
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+        findings = json.loads(proc.stdout)["findings"]
+        self.assertTrue(any("invalid git hex SHA" in f["message"] for f in findings if f["rule_id"] == "H009"))
+
+    def test_empty_limitations_fails(self):
+        tmp = self._create_showcase_fixture(manifest_modifications={
+            "flagship_0": {"known_limitations": "   "}
+        })
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+        findings = json.loads(proc.stdout)["findings"]
+        self.assertTrue(any("empty known_limitations" in f["message"] for f in findings if f["rule_id"] == "H009"))
+
+    def test_workstation_path_leak_fails(self):
+        tmp = self._create_showcase_fixture(manifest_modifications={
+            "flagship_0": {"primary_media": "C:\\Users\\engineer\\secret\\demo.png"}
+        })
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+        findings = json.loads(proc.stdout)["findings"]
+        self.assertTrue(any("leaks workstation path" in f["message"] for f in findings if f["rule_id"] == "H009"))
+
+    def test_invalid_verification_status_fails(self):
+        tmp = self._create_showcase_fixture(manifest_modifications={
+            "flagship_0": {"verification_status": "FUTURE_VERSION"}
+        })
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+        findings = json.loads(proc.stdout)["findings"]
+        self.assertTrue(any("invalid verification_status" in f["message"] for f in findings if f["rule_id"] == "H009"))
 
 
 if __name__ == "__main__":

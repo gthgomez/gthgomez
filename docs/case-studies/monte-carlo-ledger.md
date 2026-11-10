@@ -16,7 +16,7 @@ MonteCarlo-Ledger solves this by decoupling financial forecasting into a **two-s
 
 - **Engineers & Quantitative Analysts**: Users who value data sovereignty, inspectable SQLite storage, and mathematically rigorous risk bounds over black-box cloud dashboards.
 - **Individuals with Variable or Asynchronous Cashflows**: Freelancers, contractors, and wage earners managing uneven pay dates, irregular contract payments, and fixed recurring liabilities.
-- **Developers Building Financial Software**: Teams looking for reference patterns in double-entry ledger persistence, integer math safety, and hypothesis-tested invariant guarantees.
+- **Developers Building Financial Software**: Teams looking for reference patterns in signed-transaction integer-cents ledger persistence, derived balance invariants, and hypothesis-tested stability guarantees.
 
 ## 3. Why the Problem Is Technically Difficult
 
@@ -48,7 +48,7 @@ flowchart TD
     Pipeline --> Metrics["Trough Distribution, P10/P50/P90 Safe-to-Spend Quantiles"]
 ```
 
-- **Double-Entry Ledger Core**: Derives account balances from an append-oriented transaction log stored in SQLite. Balances are computed sums, preventing arbitrary manual overwrites.
+- **Signed-Transaction Ledger Core**: Stores integer-cents transaction deltas (`amount INTEGER NOT NULL`, `type IN ('Income', 'Expense', 'Adjustment')`) in an append-oriented transaction log in SQLite. Balances are computed sums derived from transaction deltas rather than arbitrary manual overwrites.
 - **Integer Cents Representation**: Every monetary value is stored and manipulated strictly as 64-bit integer cents, eliminating float drift.
 - **Deterministic Timeline Forecaster**: Projects scheduled income, fixed recurring bills, and amortized debt obligations onto a discrete daily timeline over a configurable horizon (e.g., 90 days).
 - **Monte Carlo Risk Engine**: Runs thousands of seeded, reproducible simulation trials introducing bounded variance (paycheck delays, surprise medical/automotive expenses, utility fluctuations) to calculate safe-to-spend quantiles.
@@ -57,7 +57,7 @@ flowchart TD
 ## 5. Important Engineering Decisions
 
 - **Deterministic Baseline Before Stochastic Simulation**: We deliberately avoid running Monte Carlo directly on top of raw monthly averages. Grounding the simulation on exact bill due dates ensures that the resulting risk metrics reflect realistic cash-flow constraints.
-- **Hypothesis Property-Based Testing**: Rather than relying only on hand-written example tests, the codebase uses `hypothesis` to generate thousands of random financial histories and verify that core invariants (e.g., total funds conservation, non-negative transaction sums, idempotent ledger reconciliations) hold true across all edge cases.
+- **Hypothesis Property-Based Testing**: Rather than relying only on hand-written example tests, the codebase uses `hypothesis` to generate thousands of random financial histories and verify that core invariants (e.g., derived balance consistency, non-null amount integrity, idempotent transaction recording, and trough monotonicity) hold true across all edge cases.
 - **Local-First SQLite Architecture**: SQLite provides zero-latency queries, atomic transactions (ACID), zero operational overhead, and effortless encrypted backup via standard file system utilities.
 
 ## 6. Alternatives and Tradeoffs
@@ -76,11 +76,11 @@ flowchart TD
 ## 8. Reproducible Tests and Validation
 
 The test suite validates financial correctness, integer math safety, and API contracts:
-- **Ledger Invariant Tests**: Verify that debit/credit balances match and no transaction can orphan funds.
+- **Ledger Invariant Tests**: Verify that derived balances exactly match transaction log sums and signed delta updates maintain ledger consistency.
 - **Property-Based Invariants**: Comprehensive `hypothesis` tests fuzzing transaction inputs and date sequences.
 - **API Contract Conformance**: End-to-end tests ensuring the local REST API conforms to the OpenAPI specification.
 
-All 184 tests pass cleanly via:
+Automated tests validate property invariants and CLI endpoints:
 ```powershell
 pytest tests
 ```
@@ -96,6 +96,7 @@ Through the interactive CLI:
 
 ## 10. Current Limitations
 
+- **Ledger Model**: Uses a single-currency signed-transaction integer-cents ledger (`amount INTEGER NOT NULL`, transaction type constraints) rather than a multi-account balanced debit/credit posting architecture.
 - **Synthetic Historical Scenarios**: While stochastic models handle bounded variance, structural macro shocks (prolonged job loss) must be modeled as discrete manual scenarios rather than normal distributions.
 - **Single-Currency Focus**: Currently designed around a unified integer base currency; cross-currency multi-wallet conversions require manual exchange rate conversion.
 

@@ -19,7 +19,7 @@ Prismatix addresses this by introducing an **explainable, cost-governed multi-pr
 ## 3. Why the Problem Is Technically Difficult
 
 1. **Low-Latency Streaming with Dual-Sided Accounting**: Standard HTTP proxying buffers responses, destroying perceived interactive streaming speed. Streaming tokens via Server-Sent Events (SSE) while concurrently accumulating token counts, calculating fractional cents, and enforcing pre-inference budget reservations requires tight stream lifecycle management.
-2. **Fail-Closed Financial Boundaries at Edge**: If a provider updates their pricing or returns an unknown model identifier, naive routers continue dispatching traffic and incurring untracked charges. Prismatix requires fail-closed admissions: if pricing cannot be proven, the gateway refuses execution.
+2. **Fail-Closed Financial Boundaries at Edge**: If a provider updates their pricing or returns an unknown model identifier, naive routers continue dispatching traffic and incurring untracked charges. Prismatix implements fail-closed admission: if a model is missing registered pricing or budget holds cannot be established, execution is rejected (HTTP 409 for unpriced models, HTTP 503 for admission/ledger failures) before invoking any external provider.
 3. **Client-Side Key Privacy (BYOK)**: Users provide sensitive third-party API keys. Keys must never be stored in plain text or leaked through logs, server telemetry, or cross-tenant edge storage.
 
 ## 4. Architecture and Major Subsystems
@@ -59,7 +59,7 @@ flowchart TD
 - **Frontend Client (Vite + React + TypeScript)**: Features markdown code syntax highlighting, thinking-process accordions, model selector dropdowns, and an inline Route Explanation Inspector showing exactly why Auto-routing picked a model.
 - **Edge Router (Deno Edge Functions)**: Edge-native handler that verifies authentication, resolves the model route, establishes pre-inference budget holds, and proxies streaming tokens.
 - **Model Pricing & Capability Registry**: Curated catalog mapping model identifiers to input/output token pricing, context limits, tool capabilities, and benchmark tiers.
-- **Execution Ledger (Supabase / Postgres)**: Records cryptographic hashes of executions, token counts, final settled costs, and user budget quotas.
+- **Execution Ledger (Supabase / Postgres)**: Records execution records, token usage metrics, final settled costs, and user budget balance quotas.
 
 ## 5. Important Engineering Decisions
 
@@ -73,7 +73,7 @@ flowchart TD
 |---|---|---|
 | Centralized Paid API Proxy | BYOK (Bring-Your-Own-Key) Client Architecture | Completely eliminates subscription middleman markups and guarantees that user credentials remain under individual user ownership. |
 | Buffered Full-Response HTTP | Low-Latency Server-Sent Events (SSE) Streaming | First-token latency is critical for user experience; SSE enables immediate feedback while tracking chunk lengths. |
-| Fail-Open on Missing Model Metadata | Fail-Closed 503 Rejection | Prevents unexpected cost surprises when upstream vendors alter model identifiers or pricing structures. |
+| Fail-Open on Missing Model Metadata | Fail-Closed Rejection (HTTP 409 for unpriced models, HTTP 503 for admission outage) | Prevents unexpected cost surprises when upstream vendors alter model identifiers or pricing structures. |
 
 ## 7. Interesting Implementation Details
 
@@ -83,11 +83,11 @@ flowchart TD
 ## 8. Reproducible Tests and Validation
 
 The project maintains extensive unit, integration, and E2E test suites:
-- **Routing & Fail-Closed Tests**: Validate that unpriced models and invalid tokens are rejected with HTTP 401/503 before any upstream provider is invoked.
+- **Routing & Fail-Closed Tests**: Validate that unpriced models return HTTP 409 Conflict (`unknown_model_pricing`), unauthorized requests return HTTP 401, and database admission RPC / ledger failures return HTTP 503 (`admission_unavailable`, `accounting_unavailable`).
 - **Stream Lifecycle Verifiers**: Test backpressure, abort signals, and stream chunk accumulation under simulated network interruptions.
 - **UI Component Checks**: Verify model selector state, cost badge rendering, and conversation tree persistence.
 
-Over 900 automated unit and integration tests validate the routing and frontend surfaces:
+Automated unit and integration test suites validate the routing and frontend surfaces:
 ```powershell
 npm test
 ```
@@ -103,6 +103,8 @@ Visiting the live application at [https://prismatix-app.vercel.app](https://pris
 
 ## 10. Current Limitations
 
+- **Production Deployment Status**: The live production web deployment at [https://prismatix-app.vercel.app](https://prismatix-app.vercel.app) runs commit `7d143a1` (PR #59). Newer Wave 2 features (knowledge ingestion and multimodal auto-routing) exist on the default `main` branch (`5d8127f`) and are validated by tests.
+- **Registered Tariffs, Not Cryptographic Proofs**: Pricing verification matches against a curated registry of provider pricing tariffs and enforces fail-closed execution rather than cryptographic pricing proofs.
 - **Provider Outages**: Third-party model API downtime or gateway degradation directly affects route availability; the fallback chain mitigates but cannot eliminate upstream outages.
 - **Free Tier Provider Limits**: When running under public demonstration mode with mock or community gateways, rate limits apply to prevent abuse.
 
