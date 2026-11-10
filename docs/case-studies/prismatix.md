@@ -2,7 +2,7 @@
 
 **Multi-provider AI chat with explainable model routing, streaming responses, and fail-closed pricing controls.**
 
-[![Prismatix Interface Overview](../../assets/showcase/prismatix-overview.jpg)](../../assets/showcase/prismatix-overview.jpg)
+[![Prismatix Live Authenticated Chat Interface](../../assets/showcase/prismatix-live-chat.png)](../../assets/showcase/prismatix-live-chat.png)
 
 ## 1. Problem Being Solved
 
@@ -93,6 +93,8 @@ npm test
 ```
 
 ## 9. User-Facing Demonstration
+
+[![Prismatix Explainable Routing Intelligence](../../assets/showcase/prismatix-routing-intelligence.png)](../../assets/showcase/prismatix-routing-intelligence.png)
 
 Visiting the live application at [https://prismatix-app.vercel.app](https://prismatix-app.vercel.app):
 1. The user selects "Auto-Router" or a designated frontier model.
