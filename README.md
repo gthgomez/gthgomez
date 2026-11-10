@@ -31,75 +31,80 @@ The six systems below demonstrate the core of my technical work across AI infras
 ---
 
 ### 1. [Babel](https://github.com/gthgomez/Babel) — AI Coding-Agent Runtime & Evidence Verifier
-> **Stack**: TypeScript, Node.js, Electron, SQLite FTS, Tree-Sitter | **Role**: Flagship 1 (AI Infrastructure)
+> **Stack**: TypeScript, Node.js, Electron, SQLite FTS, Tree-Sitter | **Role**: Flagship 1 (AI Infrastructure)  
+> **Explore**: [Web Portal](https://babel-origin-site.vercel.app) • [Source Code](https://github.com/gthgomez/Babel) • [Technical Case Study](docs/case-studies/babel.md) • [Releases](https://github.com/gthgomez/Babel/releases)
 
 [![Babel Desktop Interface](assets/showcase/babel-desktop.png)](https://github.com/gthgomez/Babel)
 
-- **The Problem**: AI coding agents routinely suffer from hallucinatory completion—claiming a complex task is resolved without proving that edits compile, pass test suites, or respect project invariants.
-- **Technical Solution**: Babel wraps agent execution in an inspectable, multi-interface runtime (CLI, TUI, and desktop). It enforces **evidence-bound task completion**: an agent cannot declare a task done in text alone; it must produce a machine-verifiable execution receipt containing process exit codes, file diffs, and verification proofs.
-- **Architecture**: Employs a layered operational prompt hierarchy (System Router, Behavioral OS, Domain Architects, and Model Adapters), an SQLite full-text index for fast heuristic symbol lookup, and process supervision with watchdog timeouts.
-- **Links**: [Repository](https://github.com/gthgomez/Babel) • [Technical Case Study](docs/case-studies/babel.md) • [Latest Releases](https://github.com/gthgomez/Babel/releases/latest) • [Web Portal](https://babel-origin-site.vercel.app)
+- **What It Looks Like Running**: A multi-interface desktop client (Electron, TUI, and CLI) where users direct autonomous agents with continuous streaming output, live symbol indexing, and structured task milestones.
+- **What Users Accomplish**: Automate software engineering workflows without trusting unverified model text. Babel spawns isolated subprocesses, monitors file modifications, runs project test suites, and issues machine-verifiable completion receipts before declaring tasks complete.
+- **Core Engineering Challenge**: Decoupling LLM generation from execution verification. Babel implements an evidence-bound execution harness: if compiler diagnostics or test assertions fail, the harness marks the task blocked regardless of agent confidence.
+- **Architecture**: Layered operational prompt hierarchy (System Router, Behavioral OS, Domain Architects, Model Adapters), an SQLite full-text index for fast heuristic symbol lookup, and process supervision with watchdog timeouts.
 
 ---
 
 ### 2. [MonteCarlo-Ledger](https://github.com/gthgomez/MonteCarlo-Ledger) — Deterministic Cash-Flow Forecaster & Risk Engine
-> **Stack**: Python 3.10+, SQLite, FastAPI, Hypothesis, Pydantic | **Role**: Flagship 2 (Backend & Mathematical Engineering)
+> **Stack**: Python 3.10+, SQLite, FastAPI, Hypothesis, Pydantic | **Role**: Flagship 2 (Backend & Mathematical Engineering)  
+> **Explore**: [Try Live App](https://montecarlo-ledger.vercel.app) • [Source Code](https://github.com/gthgomez/MonteCarlo-Ledger) • [Technical Case Study](docs/case-studies/monte-carlo-ledger.md) • [Android Companion](https://github.com/gthgomez/MonteCarloLedger-Android)
 
-[![Monte Carlo Ledger Architecture](assets/showcase/monte-carlo-architecture.svg)](https://github.com/gthgomez/MonteCarlo-Ledger)
+[![Monte Carlo Ledger Web Companion](assets/showcase/monte-carlo-dashboard.png)](https://montecarlo-ledger.vercel.app)
 
-- **The Problem**: Most personal budgeting tools display current balances but cannot evaluate cash-flow fragility: *"How much can I safely spend before my next paycheck without risking a scheduled obligation?"*
-- **Technical Solution**: Implements a **two-stage forecasting engine**. Stage 1 projects recurring bills, payroll, and debt amortization onto an exact calendar timeline over a 90-day horizon. Stage 2 executes thousands of seeded Monte Carlo stochastic trials to stress-test that timeline against surprise expenses and paycheck variance.
-- **Architecture**: Enforces a signed-transaction integer-cents ledger (`amount INTEGER NOT NULL`, `type IN ('Income', 'Expense', 'Adjustment')`) where balances are strictly derived from transaction log deltas. Uses 64-bit integer cents throughout to eliminate floating-point drift. Validated through property-based invariant testing.
-- **Links**: [Repository](https://github.com/gthgomez/MonteCarlo-Ledger) • [Technical Case Study](docs/case-studies/monte-carlo-ledger.md) • [Live Web Visualizer](https://montecarlo-ledger.vercel.app) • [Android Companion](https://github.com/gthgomez/MonteCarloLedger-Android)
+- **What It Looks Like Running**: An interactive web companion featuring a 90-day cash-flow timeline, live Safe-to-Spend P10 quantile gauges, projected liquidity trough indicators, and an interactive What-If Decision Studio with real-time fragility sliders.
+- **What Users Accomplish**: Evaluate cash-flow fragility and answer critical financial questions before spending: *"How much can I safely spend today without bouncing an upcoming obligation?"*
+- **Core Engineering Challenge**: Financial risk is path-dependent. Standard monthly budgeting tools ignore exact calendar sequencing: rent on the 1st vs. payroll on the 15th causes an overdraft even if the month ends positive. MonteCarlo-Ledger implements a **two-stage forecasting engine**: Stage 1 projects known commitments onto an exact calendar timeline; Stage 2 executes thousands of seeded Monte Carlo stochastic trials to stress-test that timeline against surprise expenses.
+- **Architecture**: Enforces a signed-transaction integer-cents ledger (`amount INTEGER NOT NULL`, `type IN ('Income', 'Expense', 'Adjustment')`) where balances are strictly derived from transaction log deltas. Uses 64-bit integer cents throughout to eliminate floating-point drift, validated through property-based invariant testing.
 
 ---
 
 ### 3. [Prismatix](https://github.com/gthgomez/Prismatix) — Multi-Provider AI Chat with Cost Governance
-> **Stack**: TypeScript, Vite, React, Deno Edge Functions, Supabase Postgres | **Role**: Flagship 3 (Full-Stack Engineering)
+> **Stack**: TypeScript, Vite, React, Deno Edge Functions, Supabase Postgres | **Role**: Flagship 3 (Full-Stack Engineering)  
+> **Explore**: [Try Live App](https://prismatix-app.vercel.app) • [Source Code](https://github.com/gthgomez/Prismatix) • [Technical Case Study](docs/case-studies/prismatix.md) • [On-Device Companion](https://github.com/gthgomez/PrismLocal)
 
-[![Prismatix Interface Overview](assets/showcase/prismatix-overview.jpg)](https://github.com/gthgomez/Prismatix)
+[![Prismatix Live Authenticated Chat Interface](assets/showcase/prismatix-live-chat.png)](https://prismatix-app.vercel.app)
 
-- **The Problem**: Multi-model chat interfaces typically operate as opaque proxies: they do not explain why a specific model was selected and fail open during pricing changes, risking unexpected cloud billing spikes.
-- **Technical Solution**: A multi-provider AI chat client featuring **explainable model routing**, low-latency Server-Sent Events (SSE) streaming, and **fail-closed budget controls**. When set to Auto mode, an inline inspector displays the evaluated task class, selected model, fallback chain, and cost basis.
-- **Architecture**: Built on Deno Edge Functions and Supabase Postgres. Pre-inference admission gates reject unpriced models with HTTP 409 Conflict and database admission outages with HTTP 503 before requests reach external LLM providers. Includes client-side authenticated key encryption (BYOK). Production web deployment runs commit `7d143a1`.
-- **Links**: [Repository](https://github.com/gthgomez/Prismatix) • [Technical Case Study](docs/case-studies/prismatix.md) • [Live Web App](https://prismatix-app.vercel.app) • [On-Device Companion](https://github.com/gthgomez/PrismLocal)
+- **What It Looks Like Running**: A modern multi-model chat workspace showing live explainable auto-routing, real-time spend analytics ($0.1758 all-time settled, live turn tracking), per-turn spend caps, and model-tier complexity scoring.
+- **What Users Accomplish**: Access premier frontier models (Claude, GPT, Gemini, DeepSeek) through a single unified interface with transparent cost attribution, automatic task-based model selection, and multi-model debate synthesis.
+- **Core Engineering Challenge**: Eliminating vendor opacity and runaway cloud spend. Prismatix implements **explainable model routing** paired with **fail-closed budget controls** on Deno Edge Functions. Unpriced models fail closed with an explicit HTTP 409 Conflict, and admission database outages return HTTP 503 before invoking external providers.
+- **Architecture**: Built on Deno Edge Functions and Supabase Postgres. Features client-side BYOK key encryption (AES-256-GCM), streaming token counters, and post-stream settlement receipts. Production web deployment runs commit `7d143a1`.
 
 ---
 
 ### 4. [GBA_Emulator](https://github.com/gthgomez/GBA_Emulator) — C++17 Emulator Core & Conformance Lab
-> **Stack**: C++17, CMake, SDL3, Google Oboe | **Role**: Flagship 4 (Systems Programming & Architecture)
+> **Stack**: C++17, CMake, SDL3, Google Oboe | **Role**: Flagship 4 (Systems Programming & Architecture)  
+> **Explore**: [Source Code](https://github.com/gthgomez/GBA_Emulator) • [Technical Case Study](docs/case-studies/gba-emulator.md) • [Open Issues & Conformance Status](https://github.com/gthgomez/GBA_Emulator/blob/main/docs/open-issues-status.md) • [Android Shell](https://github.com/gthgomez/GbaEmulatorAndroid)
 
-[![GBA Emulator Architecture](assets/showcase/gba-architecture.svg)](https://github.com/gthgomez/GBA_Emulator)
+[![GBA Emulator Desktop Host Running Synthetic Video Conformance Test](assets/showcase/gba-emulator-running.png)](https://github.com/gthgomez/GBA_Emulator)
 
-- **The Problem**: Game console emulators often rely on ad-hoc hacks and approximations that sacrifice architectural fidelity, break instruction timing contracts, and fail subtle hardware corner cases.
-- **Technical Solution**: A portable Game Boy Advance emulation core built with strict modern C++17 (`-Wall -Wextra -Werror`). Prioritizes cycle-accurate timing, clean hardware abstraction, deterministic headless testing, and transparent public conformance tracking.
-- **Architecture**: Implements the ARM7TDMI processor with dual ARMv4T and Thumb instruction decoders, 3-stage pipeline hazard logic, memory waitstate modeling (IWRAM, EWRAM, VRAM, Cartridge ROM), a 2D scanline PPU rasterizer (Modes 0–5), and an APU sound synthesizer.
-- **Status & Policy**: Verified across local core verifier binaries and public mGBA test suites. Governed by a strict non-commercial ROM policy using legal, open-source test suites only.
-- **Links**: [Repository](https://github.com/gthgomez/GBA_Emulator) • [Technical Case Study](docs/case-studies/gba-emulator.md) • [Open Issues & Conformance Status](https://github.com/gthgomez/GBA_Emulator/blob/main/docs/open-issues-status.md) • [Android Shell](https://github.com/gthgomez/GbaEmulatorAndroid)
+- **What It Looks Like Running**: A high-performance C++17 desktop emulator (`gba-desktop.exe`) executing interactive synthetic video and timing conformance suites at 3x integer scale (720x480) with real-time 60 fps scanline rasterization.
+- **What Users Accomplish**: Study cycle-stepped computer architecture, inspect ARMv4T pipeline hazards, and run verified homebrew and conformance test suites on a modular, portable emulation core.
+- **Core Engineering Challenge**: Accurate hardware timing and bus waitstates without ad-hoc game hacks. The memory bus controller accurately models electrical waitstates: 0 waitstates for 32-bit IWRAM, 2 waitstates for 16-bit EWRAM, and configurable waitstates for Game Pak ROM.
+- **Status & Policy**: Verified across 32 local core verifiers and public mGBA test suites (11/13 green). Testing is performed strictly against open-source synthetic suites; commercial ROM compatibility remains untested per legal policy.
 
 ---
 
 ### 5. [ProofPath](https://github.com/gthgomez/ProofPath) — Offline-First Learning System with Verifiable Proofs
-> **Stack**: TypeScript, React Native, Expo, Pyodide (WebAssembly), SQLite | **Role**: Flagship 5 (Product & Education Engineering)
+> **Stack**: TypeScript, React Native, Expo, Pyodide (WebAssembly), SQLite | **Role**: Flagship 5 (Product & Education Engineering)  
+> **Explore**: [Source Code](https://github.com/gthgomez/ProofPath) • [Technical Case Study](docs/case-studies/proofpath.md) • [Architecture Notes](https://github.com/gthgomez/ProofPath/blob/main/docs/README.md)
 
-[![ProofPath Lesson Screen](assets/showcase/proofpath-lesson.jpg)](https://github.com/gthgomez/ProofPath)
+[![ProofPath In-Browser WebAssembly Learning Sandbox](assets/showcase/proofpath-lesson.jpg)](https://github.com/gthgomez/ProofPath)
 
-- **The Problem**: Online coding platforms often encourage passive video viewing, rely on expensive server-side cloud sandboxes that stop working offline, and issue certificates that recruiters cannot independently verify.
-- **Technical Solution**: An offline-first mobile and web application combining an **in-browser WebAssembly execution sandbox** with **structured, provenance-aware portfolio evidence export**. Learners write code locally, observe real test suite grading, and export structured JSON evidence packets with a four-tier trust model (`auto_verified_code_lab`, `reproduction_package_supplied`, `manual_verifier_output`, `manual_note`).
-- **Architecture**: Bundles Pyodide WebAssembly in an isolated worker thread with watchdog timeout protection. Structured local SQLite storage retains student progress across offline sessions, with support for JSON backup migration.
-- **Links**: [Repository](https://github.com/gthgomez/ProofPath) • [Technical Case Study](docs/case-studies/proofpath.md) • [Project Architecture Notes](https://github.com/gthgomez/ProofPath/blob/main/docs/README.md)
+- **What It Looks Like Running**: An interactive mobile and web learning application where students write and execute real Python code directly inside the browser with immediate automated test assertion feedback.
+- **What Users Accomplish**: Master programming fundamentals completely offline, execute code without paid server sandboxes, and export verifiable JSON evidence packets demonstrating genuine problem-solving mastery.
+- **Core Engineering Challenge**: Running untrusted Python code safely in the browser without server dependencies while generating tamper-evident learning records. ProofPath isolates Pyodide WebAssembly inside dedicated WebWorkers with execution watchdogs, computing a 32-bit DJB2 content hash over passing code.
+- **Architecture**: Bundles Pyodide WebAssembly with a local SQLite database for offline progress retention, supporting structured JSON portfolio export under a 4-tier evidence trust model.
 
 ---
 
 ### 6. [reliquary](https://github.com/gthgomez/reliquary) — Creature-Collecting Web RPG & Engine
-> **Stack**: TypeScript, React, HTML5 Canvas, Vite, Tailwind CSS | **Role**: Flagship 6 (Game Engine & Interactive Systems)
+> **Stack**: TypeScript, React, HTML5 Canvas, Vite, Tailwind CSS | **Role**: Flagship 6 (Game Engine & Interactive Systems)  
+> **Explore**: [Play Live Game](https://reliquary-dusky.vercel.app) • [Source Code](https://github.com/gthgomez/reliquary) • [Technical Case Study](docs/case-studies/reliquary.md) • [Engine Architecture](https://github.com/gthgomez/reliquary/blob/main/docs/ARCHITECTURE.md)
 
-[![Reliquary Battle Interface](assets/showcase/reliquary-battle.png)](https://github.com/gthgomez/reliquary)
+[![Reliquary Playable Creature-Collecting Web RPG](assets/showcase/reliquary-battle.png)](https://reliquary-dusky.vercel.app)
 
-- **The Problem**: Web-based games frequently couple game simulation to browser animation frames, causing battle math desync, frame drops, and corrupted save files across version updates.
-- **Technical Solution**: A playable browser-based fantasy creature-binding RPG prototype applying software engineering rigor to web gaming. Features a **pure headless battle engine** decoupled from presentation rendering, a 2D tilemap collision system, safe-spawn algorithms, and full Progressive Web App (PWA) offline support.
-- **Architecture**: Turn-based damage and status calculations resolve deterministically upon action confirmation; visual particle effects merely illustrate resolved state. Supports keyboard, gamepad, and responsive mobile touch controls.
-- **Links**: [Repository](https://github.com/gthgomez/reliquary) • [Technical Case Study](docs/case-studies/reliquary.md) • [Playable Web Deployment](https://reliquary-dusky.vercel.app) • [Architecture Guide](https://github.com/gthgomez/reliquary/blob/main/docs/ARCHITECTURE.md)
+- **What It Looks Like Running**: A playable web-based creature-binding RPG featuring turn-based tactical combat, Elderhall exploration on 2D tilemaps, creature party management, and responsive gamepad/touch controls.
+- **What Users Accomplish**: Play an authentic retro-style creature RPG in any browser, explore procedural wild encounter zones, and battle with deterministic state transitions that persist across offline sessions via PWA storage.
+- **Core Engineering Challenge**: Eliminating simulation-rendering desync. Many web games tie game math to `requestAnimationFrame`, causing calculations to desync or drop inputs when backgrounded. Reliquary decouples game simulation into a **pure headless battle engine**: state transitions evaluate immediately upon action confirmation, and Canvas visual effects merely render the resolved state.
+- **Architecture**: Pure functional battle logic, safe-spawn Poisson tile placement, Progressive Web App service worker caching, and schema-versioned `localStorage` save migrations.
 
 ---
 
