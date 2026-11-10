@@ -1,6 +1,6 @@
 # Engineering Case Study: Reliquary
 
-**Browser-based fantasy creature-collecting RPG with exploration, turn-based battles, progression, saving, and PWA support.**
+**Browser-based fantasy creature-collecting RPG prototype with exploration, turn-based battles, progression, saving, and PWA support.**
 
 [![Reliquary Battle Interface](../../assets/showcase/reliquary-battle.png)](../../assets/showcase/reliquary-battle.png)
 
@@ -83,7 +83,7 @@ flowchart TD
 |---|---|---|
 | Monolithic Commercial Game Engine (Unity/Godot Web Export) | Custom React + TypeScript + Canvas Engine | Tiny initial payload (< 2 MB vs 30+ MB WASM blobs), instantaneous browser load time, native DOM UI integration, and zero runtime licensing fees. |
 | Server-Authoritative Multiplayer Backend | Client-Authoritative Single-Player PWA | Eliminates server hosting infrastructure, enables 100% offline gameplay, and guarantees zero latency during battles. |
-| DOM-Based Element Sprite Rendering | Canvas 2D Bitmap Renderer | Canvas delivers consistent 60 fps rendering, hardware acceleration, and precise sprite atlas batching that standard DOM trees cannot sustain. |
+| DOM-Based Element Sprite Rendering | Canvas 2D Bitmap Renderer | Canvas delivers target 60 fps rendering, hardware acceleration, and precise sprite atlas batching that standard DOM trees cannot sustain. |
 
 ## 7. Interesting Implementation Details
 
@@ -99,7 +99,7 @@ The project maintains comprehensive automated test coverage:
 - **Content Integrity Checks**: Verify that every skill, creature learnset, evolution target, map warp, and NPC dialog identifier is internally valid.
 - **Save Migration Invariants**: Test that loading older save file schemas safely hydrates party stats and inventory items.
 
-Over 260 tests execute via Node.js test runner:
+Automated test suites execute via node:test runner across combat mechanics and data hydration:
 ```powershell
 npm test -- --run
 ```
@@ -116,13 +116,14 @@ Visiting the live deployment at [https://reliquary-dusky.vercel.app](https://rel
 
 ## 10. Current Limitations
 
-- **Browser Audio Autoplay Policies**: Modern browsers require an explicit user gesture (click or keypress) before web audio context can initialize music playback.
+- **Prototype Visual Asset Provenance**: Reliquary is an active playable game prototype; graphical assets include procedurally generated, curated CC0 open-game-art, and prototype sprite sheets designed to prove out the decoupled rendering and battle systems.
+- **Browser Audio Autoplay Policies**: Modern browsers require an explicit user gesture (click or keypress) before web audio context can initialize music playback, meaning soundtrack audio starts upon first interaction.
 - **Scope & Content Expansion**: While the core engine, battle system, and initial zones are complete, additional creature species and extended world biomes continue to be developed.
 
 ## 11. Specific Contributions and AI-Assisted Workflow
 
 - **Engineering Direction**: Architected the simulation/rendering decoupled pipeline, balanced the turn-based combat mathematics, established map tile collision schemas, and directed UI layout responsiveness.
-- **AI Agent Pairing**: Used coding agents to write exhaustive combat state unit tests, generate sprite sheet coordinate mappings, validate JSON content schemas, and implement touch controller input abstractions.
+- **AI Agent Pairing**: Autonomous coding agents implemented combat state transition tests, sprite sheet coordinate mappings, JSON content validators, and touch controller abstractions under human architectural specifications and game loop design.
 
 ## 12. Links and Verification References
 

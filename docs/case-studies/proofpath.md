@@ -11,7 +11,7 @@ Most online computer science education platforms suffer from three structural sh
 2. **Server-Dependent Execution**: Existing interactive learning platforms rely on expensive cloud sandboxes. If the student has poor internet connectivity or travels offline, the learning environment stops functioning entirely.
 3. **Unverifiable Progress Claims**: Students complete online courses and receive unverified PDF certificates that recruiters cannot independently audit, verify, or inspect for code authenticity.
 
-ProofPath solves these challenges by combining an **offline-first local execution sandbox** with **cryptographically verifiable portfolio evidence receipts**.
+ProofPath solves these challenges by combining an **offline-first local execution sandbox** with **structured, provenance-aware portfolio evidence packets**.
 
 ## 2. Intended Users
 
@@ -23,7 +23,7 @@ ProofPath solves these challenges by combining an **offline-first local executio
 
 1. **Sandboxed In-Browser/In-App Code Execution**: Executing user-written Python code client-side without a remote backend requires compiling Pyodide (WebAssembly) or WebWorkers safely, enforcing execution time limits, preventing infinite loops from locking the UI thread, and intercepting standard I/O (stdout/stderr).
 2. **Cross-Platform Responsive UX (Mobile & Desktop Web)**: Code editors typically fail on mobile screens due to virtual keyboard collisions, poor touch cursor selection, and cramped layouts. Designing a dual-surface touch-friendly syntax editor and desktop split-pane IDE in React Native / Expo requires meticulous UI engineering.
-3. **Tamper-Resistant Progress & Evidence Export**: Exported completion receipts must link the learner's submitted source code, test outputs, execution duration, and cryptographic file hashes so an external reviewer can verify the submission without trusting client claims.
+3. **Provenance-Aware Progress & Evidence Export**: Exported completion records must accurately track how work was validated. Rather than trusting self-reported claims, ProofPath implements a four-tier provenance trust model (`auto_verified_code_lab`, `reproduction_package_supplied`, `manual_verifier_output`, and `manual_note`), explicitly distinguishing locally executed test runner checks from unverified learner submissions.
 
 ## 4. Architecture and Major Subsystems
 
@@ -48,8 +48,8 @@ flowchart TD
     
     subgraph Persistence ["Offline Storage & Evidence Engine"]
         Store["Local Progress Store (SQLite / AsyncStorage)"]
-        Provenance["Evidence Generator & Hash Verifier"]
-        Export["Signed Evidence Receipt (.json)"]
+        Provenance["Evidence Generator & Trust Classifier"]
+        Export["Structured Evidence Packet (.json)"]
         
         Store --> Provenance
         Provenance --> Export
@@ -62,12 +62,12 @@ flowchart TD
 - **Touch-Friendly Code Lab**: React Native editor featuring syntax highlighting, virtual indentation keys, line numbering, and inline error diagnostic callouts.
 - **Client-Side Execution Worker**: Executes Python code in a dedicated worker thread using WebAssembly, isolating execution memory from the primary UI render loop.
 - **Deterministic Assertion Verifier**: Automatically executes invisible grading test suites against learner functions to verify correctness, boundary edge cases, and algorithmic complexity.
-- **Evidence Receipt Generator**: Produces machine-readable JSON receipts containing SHA-256 code digests, test pass receipts, timestamped run records, and verification proofs.
+- **Evidence Export Generator**: Produces machine-readable JSON packets containing DJB2 code hashes (`cf-` prefix), test run outputs, timestamped records, and trust tier classification.
 
 ## 5. Important Engineering Decisions
 
 - **Offline-First by Design**: All core curriculum content, test runners, and WebAssembly binaries are bundled locally into the client. Learners can study, code, and pass verification checks on an airplane with zero network access.
-- **Local Progress Persistence**: Progress is stored in an encrypted local database with support for JSON migration and backup export/restore, ensuring students never lose completed milestones.
+- **Local Progress Persistence**: Progress is stored in a structured local SQLite database (`expo-sqlite` on native / indexed storage on web) with support for JSON migration and backup export/restore, ensuring students never lose completed milestones.
 - **Dual Verification (Run File vs. Run Checks)**: Learners have access to two distinct execution modes: "Run File" outputs standard terminal stdout for interactive experimentation, while "Run Checks" executes the authoritative unit grading suite without leaking answers.
 
 ## 6. Alternatives and Tradeoffs
@@ -81,7 +81,7 @@ flowchart TD
 ## 7. Interesting Implementation Details
 
 - **Watchdog Timeout Protection**: User-submitted code is monitored by a strict watchdog timer. Infinite loops (`while True: pass`) are preemptively aborted, returning a friendly timeout diagnosis without freezing the device.
-- **Sanitized Workspace Evidence**: Exported evidence manifests omit private device markers while preserving cryptographic verification hashes, making them safe to share publicly on GitHub or LinkedIn.
+- **Sanitized Workspace Evidence**: Exported evidence manifests omit private device markers while preserving execution hashes and assertion records, making them safe to share publicly.
 
 ## 8. Reproducible Tests and Validation
 
@@ -89,8 +89,9 @@ The project maintains extensive automated test suites:
 - **Sandbox Security & Timeout Tests**: Validate that unauthorized file system escapes and runaway loops are properly confined.
 - **Curriculum Integrity Tests**: Static analysis ensuring all curriculum lessons have valid starter templates, test assertions, and reachable prerequisites.
 - **UI Accessibility & Scale Checks**: Verify font scaling, dark/light contrast ratios, and touch target dimensions.
+- **Evidence Trust & Export Tests**: Verify proper classification across all four provenance trust levels and confirm DJB2 content hashing behavior.
 
-Over 550 tests execute via Vitest:
+Automated test suites execute via Vitest across unit assertions and user journeys:
 ```powershell
 npm test -- --run
 ```
@@ -103,12 +104,15 @@ In the application:
 3. Review the conceptual prompt and inspect the starter code in the Code Lab editor.
 4. Execute "Run Checks" on incomplete code to observe failing unit assertions with diagnostic explanations.
 5. Implement the solution and re-run checks to achieve a verified green pass.
-6. Export a signed portfolio evidence receipt proving independent milestone completion.
+6. Export a structured JSON evidence packet recording the code run, test outcomes, and provenance tier.
 
 [![ProofPath Career Path Selection](../../assets/showcase/proofpath-choose.jpg)](../../assets/showcase/proofpath-choose.jpg)
 
 ## 10. Current Limitations
 
+- **Non-Cryptographic Code Hashing**: The code hashing function (`computeCodeHash`) uses a 32-bit DJB2 integer hash with a `cf-` prefix. It is designed for client-side change detection and deduplication, not cryptographic collision resistance or SHA-256 attestation.
+- **No Digital Signatures**: Exported evidence records are structured JSON provenance packets that capture test runs and validation metadata. They are not cryptographically signed certificates.
+- **Standard SQLite Persistence**: Persistence uses standard `expo-sqlite` and local storage without database-level encryption (SQLCipher).
 - **Language Scope**: Client-side WebAssembly execution currently focuses on Python and TypeScript; compiled languages (C++, Rust) require separate toolchain support.
 - **Initial WASM Load Time**: On slow mobile devices, the initial download and compilation of the Pyodide WebAssembly runtime takes several seconds before first-run caching takes effect.
 

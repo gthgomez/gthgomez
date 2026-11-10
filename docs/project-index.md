@@ -20,11 +20,14 @@ verify; per-project qualification detail lives in each repository.
 | Orbitscar | Public source | All rights reserved | Repo source |
 | ManaNet | Public source | All rights reserved | Repo source |
 | GravityPivot | Public source | All rights reserved | Repo source |
-| reliquary | Public source | All rights reserved | Repo source |
+| reliquary | Public source | All rights reserved | Repo source, live playable app |
 | WallpaperCropFixer | Public source | All rights reserved | Repo source, PRIVACY.md disclosure |
 | ExactUploadFixer | Public source | All rights reserved | Repo source |
+| RGRemote | Public source | All rights reserved | Repo source |
 | babel-origin-site | Public source | All rights reserved | Repo source, live site |
-| GPCGuard | Private | Not public | Live product only; non-public case study, no public evidence claimed |
+| gthgomez | Public source | All rights reserved | Profile README, portfolio automation, hygiene tests |
+| connect | Upstream fork | MIT | Upstream fork of commaai/connect |
+| rea | Upstream fork | GPL-3.0 | Upstream fork of morluto/rea |
 
 ## Scope notes
 

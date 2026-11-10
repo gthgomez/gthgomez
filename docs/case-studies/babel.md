@@ -46,12 +46,12 @@ flowchart TD
 
 - **CLI & TUI Engine (`babel-cli`)**: Node.js/TypeScript runtime supporting command-line switches, streaming interactive terminal sessions, full-screen TUI dashboards, and doctor diagnostics.
 - **Desktop Application (`babel-desktop`)**: Cross-platform desktop interface providing visual prompt inspection, multi-turn diff reviews, interactive approvals, and live session replay.
-- **Workspace Indexer & Context Compiler**: SQLite-backed full-text search (`fts-index.db`) and tree-sitter symbol graph enabling sub-millisecond retrieval of relevant symbols, types, and references.
-- **Evidence Collector & Verifier**: Collects compiler logs, test outputs, file diffs, and cryptographic content hashes into structured verification receipts.
+- **Workspace Indexer & Context Compiler**: SQLite-backed full-text search (`fts-index.db`) and tree-sitter grammar parsing supporting fast heuristic symbol extraction, outline generation, and identifier reference lookup.
+- **Evidence Collector & Verifier**: Collects compiler logs, test outputs, file diffs, and content hashes into structured verification receipts.
 
 ## 5. Important Engineering Decisions
 
-- **Receipt-Gated Task Completion**: Every automated intervention produces an evidence receipt capturing execution exit codes, affected files, and test verification state. If a verification check fails, Babel treats the task as blocked or failing regardless of model optimism.
+- **Receipt-Gated Task Completion**: Every automated intervention produces an evidence receipt capturing execution exit codes, affected files, and test verification state. Babel explicitly distinguishes between verified-complete runs (where automated tests execute and pass), unverified patches (code changes generated without verification execution), and blocked/failing runs, preventing false-positive completion claims.
 - **Layered Prompt Architecture**: Prompt policy is decomposed into clean, composable layers: System Router (00), Behavioral OS (01), Domain Architects (02), and Model Adapters (03). This avoids giant monolith prompts and allows model-specific fine-tuning without changing core business logic.
 - **Fail-Closed Permission Model**: File system edits outside the declared target workspace or attempts to execute unapproved shell sequences fail closed immediately.
 
@@ -94,7 +94,7 @@ In the desktop and TUI interfaces, developers:
 ## 11. Specific Contributions and AI-Assisted Workflow
 
 - **Engineering Direction**: Formulated the evidence-bound execution philosophy, designed the layered prompt system, established verification receipt schemas, and guided process isolation boundaries.
-- **AI Agent Pairing**: Used coding agents to generate comprehensive mock provider fixtures, implement TypeScript type definitions, write extensive edge-case unit tests, and maintain CLI documentation.
+- **AI Agent Pairing**: Autonomous coding agents performed substantial code implementation across CLI parsers, mock provider fixtures, TypeScript types, and unit tests, working under human architectural direction, invariant governance, and adversarial review.
 
 ## 12. Links and Verification References
 

@@ -10,13 +10,13 @@ This document provides a comprehensive, structured inventory of all repositories
 |---|---|---|---|---|
 | **Flagship Systems** | 6 | 0 | 6 | Primary technical showcases with verified implementations and case studies. |
 | **Companion Applications** | 3 | 0 | 3 | Mobile/Android shells and companion surfaces paired with flagship cores. |
-| **Supporting Tools & Utilities** | 4 | 0 | 4 | Purpose-built developer CLIs, image fixers, and hardware remotes. |
-| **Interactive Games** | 5 | 0 | 5 | Original web games and Godot game engine prototypes. |
+| **Supporting Tools & Utilities** | 4 | 0 | 4 | Purpose-built developer CLIs, image utilities, and hardware remotes. |
+| **Interactive Games** | 4 | 0 | 4 | Original web games and Godot game engine prototypes (excluding Flagship 6 reliquary). |
 | **Public Web Origin Surfaces** | 1 | 0 | 1 | Official landing and verification portals (`babel-origin-site`). |
 | **Profile & Portfolio Meta** | 1 | 0 | 1 | Profile configuration, hygiene automation, and portfolio documentation (`gthgomez`). |
 | **Upstream Forks** | 2 | 0 | 2 | Upstream open-source contributions and forks (`connect`, `rea`). |
-| **Private Incubation & Research** | 0 | 43 | 43 | Commercial SaaS pipelines, private research spikes, and archived prototypes. |
-| **Total Account Inventory** | **21** | **44** | **65** | Fully accounted repository baseline. |
+| **Private Incubation & Research** | 0 | 44 | 44 | Commercial SaaS pipelines, private research spikes, and archived prototypes. |
+| **Total Account Inventory** | **21** | **44** | **65** | Fully reconciled repository baseline (21 public, 44 private). |
 
 ---
 
@@ -36,7 +36,7 @@ These six systems represent the core of the public engineering portfolio. Each i
 - **Role**: Flagship 2 — Backend Engineering, Mathematical Modeling & Data Integrity
 - **Stack**: Python 3.10+, SQLite, FastAPI, Hypothesis, Pydantic
 - **Interfaces**: Interactive CLI, Local REST API, Web Visualizer
-- **Key Engineering Distinction**: Two-stage forecasting architecture that combines deterministic calendar bill pacing with seeded Monte Carlo stochastic risk modeling and integer-cents accounting.
+- **Key Engineering Distinction**: Two-stage forecasting architecture that combines deterministic calendar bill pacing with seeded Monte Carlo stochastic risk modeling and integer-cents transaction accounting.
 - **Case Study**: [MonteCarlo-Ledger Technical Case Study](case-studies/monte-carlo-ledger.md)
 - **Deployment**: [Live Web Visualizer](https://montecarlo-ledger.vercel.app)
 
@@ -44,7 +44,7 @@ These six systems represent the core of the public engineering portfolio. Each i
 - **Role**: Flagship 3 — Full-Stack AI Routing, Streaming & Cost Governance
 - **Stack**: TypeScript, Vite, React, Deno Edge Functions, Supabase Postgres
 - **Interfaces**: Responsive Web Application (Desktop & Mobile)
-- **Key Engineering Distinction**: Multi-provider AI chat gateway featuring explainable model routing, real-time Server-Sent Events (SSE) streaming, and fail-closed budget controls.
+- **Key Engineering Distinction**: Multi-provider AI chat gateway featuring explainable model routing, real-time Server-Sent Events (SSE) streaming, and fail-closed budget controls (HTTP 409 for unpriced models, HTTP 503 for admission/ledger outages). Production web deployment at commit `7d143a1`.
 - **Case Study**: [Prismatix Technical Case Study](case-studies/prismatix.md)
 - **Deployment**: [Live Production Application](https://prismatix-app.vercel.app)
 
@@ -60,7 +60,7 @@ These six systems represent the core of the public engineering portfolio. Each i
 - **Role**: Flagship 5 — Offline-First Learning Systems & Executable Verification
 - **Stack**: TypeScript, React Native, Expo, Pyodide (WebAssembly), SQLite
 - **Interfaces**: Cross-Platform Mobile & Desktop Web Application
-- **Key Engineering Distinction**: Hands-on computer science learning application with local client-side WebAssembly code execution, automated grading assertions, and tamper-resistant evidence export.
+- **Key Engineering Distinction**: Hands-on computer science learning application with local client-side WebAssembly code execution, automated grading assertions, and structured provenance-aware evidence export.
 - **Case Study**: [ProofPath Technical Case Study](case-studies/proofpath.md)
 - **Documentation**: [Project Architecture & Test Baselines](https://github.com/gthgomez/ProofPath/blob/main/docs/README.md)
 
@@ -68,7 +68,7 @@ These six systems represent the core of the public engineering portfolio. Each i
 - **Role**: Flagship 6 — Game Engine Development, Interactive Systems & PWA
 - **Stack**: TypeScript, React, HTML5 Canvas, Vite, Tailwind CSS
 - **Interfaces**: Responsive Browser PWA (Keyboard, Gamepad, Touch D-Pad)
-- **Key Engineering Distinction**: Medieval-fantasy creature-binding RPG with turn-based combat mathematics decoupled from render animations, tile collision masks, safe-spawn algorithms, and offline PWA service workers.
+- **Key Engineering Distinction**: Playable medieval-fantasy creature-binding RPG prototype with turn-based combat mathematics decoupled from render animations, tile collision masks, safe-spawn algorithms, and offline PWA service workers.
 - **Case Study**: [Reliquary Technical Case Study](case-studies/reliquary.md)
 - **Deployment**: [Live Playable Application](https://reliquary-dusky.vercel.app)
 
@@ -81,10 +81,10 @@ To avoid presenting fragmented repositories as disconnected efforts, related rep
 ### Family A: The Babel AI Coding Agent Ecosystem
 - **Core Runtime**: [`gthgomez/Babel`](https://github.com/gthgomez/Babel) — Main open-source repository containing CLI, TUI, and desktop client.
 - **Public Origin Site**: [`gthgomez/babel-origin-site`](https://github.com/gthgomez/babel-origin-site) — Public static web showcase and verification portal.
-- **Private Research & R&D**: `Babel-rnd`, `Babel-private` — Private research spikes, benchmarks, and experimental agent evaluation archives.
+- **Private Research & R&D**: Private research spikes, benchmarks, and experimental agent evaluation archives.
 
 ### Family B: The MonteCarlo Financial Architecture
-- **Python Core & API**: [`gthgomez/MonteCarlo-Ledger`](https://github.com/gthgomez/MonteCarlo-Ledger) — Core double-entry ledger, deterministic cash-flow engine, and Monte Carlo simulator.
+- **Python Core & API**: [`gthgomez/MonteCarlo-Ledger`](https://github.com/gthgomez/MonteCarlo-Ledger) — Core signed-transaction integer-cents ledger, deterministic cash-flow engine, and Monte Carlo simulator.
 - **Android Mobile Companion**: [`gthgomez/MonteCarloLedger-Android`](https://github.com/gthgomez/MonteCarloLedger-Android) — Native Jetpack Compose mobile client providing deterministic bill pacing, offline SQLite storage, and AES-GCM encrypted backup interoperability.
 
 ### Family C: The Prismatix AI Gateway & On-Device Inference
@@ -125,12 +125,12 @@ The portfolio explicitly documents third-party forks to preserve clear provenanc
 
 ## 5. Private Incubation, Commercial SaaS & Research
 
-The account includes 44 private repositories. In accordance with portfolio privacy policies, no proprietary source code, credentials, or internal infrastructure details are disclosed. High-level categories include:
+The account includes 44 private repositories. In accordance with portfolio privacy policies, no proprietary source code, credentials, or internal infrastructure details are disclosed. Aggregate categories include:
 
-- **Commercial SaaS & Compliance**: `GPCGuard`, `GPCGuard-public`, `AuditGuard` — Privacy compliance tools detecting Global Privacy Control (GPC) opt-out headers and generating compliance audit records.
-- **Asset Pipelines & Game Tooling**: `gamedev`, `developertools-gameassets-ages` — Generative asset pipelines, sprite sheet compilers, and level authoring tools.
-- **Smart TV Applications**: `Bible-Trivia-Night-TV`, `CouplesGameNightTV`, `Noche-de-Trivia` — Fire TV-first family trivia and interactive games developed in Kotlin/Android TV.
-- **Cloud Agent Labs & Research Archives**: `cloud-agent-lab`, `cloud-agent-hub`, `personal-data-orchestrator`, `SimLife`, `PDFFixerPro` — Disposable cloud development workstations, financial simulation prototypes, and utility spikes.
+- **Commercial SaaS & Privacy Compliance (3 repositories)**: Privacy compliance systems detecting Global Privacy Control (GPC) signals, opt-out mechanisms, and regulatory audit trail generators.
+- **Game Asset Pipelines & Engine Tooling (2 repositories)**: Generative sprite sheet compilers, animation packagers, and level authoring utilities.
+- **Android TV & Smart Living Applications (3 repositories)**: Fire TV family entertainment, interactive trivia, and household utilities built with Kotlin and Android TV frameworks.
+- **AI Agent Experiments & Cloud Sandboxes (36 repositories)**: Ephemeral cloud developer environments, prototype agent harnesses, data extraction spikes, and historical research archives.
 
 ---
 

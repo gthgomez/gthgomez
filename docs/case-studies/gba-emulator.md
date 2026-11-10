@@ -105,7 +105,7 @@ Running the desktop interactive host:
 ## 11. Specific Contributions and AI-Assisted Workflow
 
 - **Engineering Direction**: Architected the C++17 class hierarchy, specified CPU register banking structures, implemented memory waitstate tables, configured CMake build matrices, and defined conformance verification baselines.
-- **AI Agent Pairing**: Leveraged AI coding agents for writing exhaustive opcode unit tests, generating Thumb instruction bit-pattern lookup tables, and structuring CI workflows.
+- **AI Agent Pairing**: Coding agents assisted in generating opcode unit test cases, Thumb instruction bit-pattern lookup tables, and build scripts under human architectural specifications, register model design, and conformance debugging.
 
 ## 12. Links and Verification References
 
