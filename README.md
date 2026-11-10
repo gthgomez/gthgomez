@@ -45,7 +45,7 @@ The six systems below demonstrate the core of my technical work across AI infras
 
 ### 2. [MonteCarlo-Ledger](https://github.com/gthgomez/MonteCarlo-Ledger) — Deterministic Cash-Flow Forecaster & Risk Engine
 > **Stack**: Python 3.10+, SQLite, FastAPI, Hypothesis, Pydantic | **Role**: Flagship 2 (Backend & Mathematical Engineering)  
-> **Explore**: [Try Live App](https://montecarlo-ledger.vercel.app) • [Source Code](https://github.com/gthgomez/MonteCarlo-Ledger) • [Technical Case Study](docs/case-studies/monte-carlo-ledger.md) • [Android Companion](https://github.com/gthgomez/MonteCarloLedger-Android)
+> **Explore**: [Try Live Web Companion](https://montecarlo-ledger.vercel.app) • [Source Code](https://github.com/gthgomez/MonteCarlo-Ledger) • [Technical Case Study](docs/case-studies/monte-carlo-ledger.md) • [Android Companion](https://github.com/gthgomez/MonteCarloLedger-Android)
 
 [![Monte Carlo Ledger Web Companion](assets/showcase/monte-carlo-dashboard.png)](https://montecarlo-ledger.vercel.app)
 
@@ -58,14 +58,14 @@ The six systems below demonstrate the core of my technical work across AI infras
 
 ### 3. [Prismatix](https://github.com/gthgomez/Prismatix) — Multi-Provider AI Chat with Cost Governance
 > **Stack**: TypeScript, Vite, React, Deno Edge Functions, Supabase Postgres | **Role**: Flagship 3 (Full-Stack Engineering)  
-> **Explore**: [Try Live App](https://prismatix-app.vercel.app) • [Source Code](https://github.com/gthgomez/Prismatix) • [Technical Case Study](docs/case-studies/prismatix.md) • [On-Device Companion](https://github.com/gthgomez/PrismLocal)
+> **Explore**: [Try Live App](https://prismatix-app.vercel.app) • [Demo Video](https://github.com/gthgomez/Prismatix/blob/main/docs/showcase/media/workflow.mp4) • [Source Code](https://github.com/gthgomez/Prismatix) • [Technical Case Study](docs/case-studies/prismatix.md) • [On-Device Companion](https://github.com/gthgomez/PrismLocal)
 
-[![Prismatix Live Authenticated Chat Interface](assets/showcase/prismatix-live-chat.png)](https://prismatix-app.vercel.app)
+[![Prismatix Multi-Model Interface & Routing](assets/showcase/prismatix-overview.jpg)](https://prismatix-app.vercel.app)
 
-- **What It Looks Like Running**: A modern multi-model chat workspace showing live explainable auto-routing, real-time spend analytics ($0.1758 all-time settled, live turn tracking), per-turn spend caps, and model-tier complexity scoring.
+- **What It Looks Like Running**: An interactive multi-model workspace featuring explainable auto-routing, model complexity tiering, real-time cost attribution, and per-turn spend caps. (Demonstrates scripted interactive routing and model tiers; live provider calls require user BYOK keys).
 - **What Users Accomplish**: Access premier frontier models (Claude, GPT, Gemini, DeepSeek) through a single unified interface with transparent cost attribution, automatic task-based model selection, and multi-model debate synthesis.
 - **Core Engineering Challenge**: Eliminating vendor opacity and runaway cloud spend. Prismatix implements **explainable model routing** paired with **fail-closed budget controls** on Deno Edge Functions. Unpriced models fail closed with an explicit HTTP 409 Conflict, and admission database outages return HTTP 503 before invoking external providers.
-- **Architecture**: Built on Deno Edge Functions and Supabase Postgres. Features client-side BYOK key encryption (AES-256-GCM), streaming token counters, and post-stream settlement receipts. Production web deployment runs commit `7d143a1`.
+- **Architecture**: Built on Deno Edge Functions and Supabase Postgres. Features server-side authenticated encryption (AES-256-GCM via Deno Edge Functions with server-managed secrets) for stored BYOK credentials, streaming token counters, and post-stream settlement receipts. Production web deployment runs commit `7d143a1`.
 
 ---
 
@@ -75,10 +75,10 @@ The six systems below demonstrate the core of my technical work across AI infras
 
 [![GBA Emulator Desktop Host Running Synthetic Video Conformance Test](assets/showcase/gba-emulator-running.png)](https://github.com/gthgomez/GBA_Emulator)
 
-- **What It Looks Like Running**: A high-performance C++17 desktop emulator (`gba-desktop.exe`) executing interactive synthetic video and timing conformance suites at 3x integer scale (720x480) with real-time 60 fps scanline rasterization.
+- **What It Looks Like Running**: A cycle-stepped C++17 desktop emulator (`gba-desktop.exe`) executing interactive synthetic video and timing conformance suites at 3x integer scale (720x480) with scanline-accurate 2D PPU rasterization.
 - **What Users Accomplish**: Study cycle-stepped computer architecture, inspect ARMv4T pipeline hazards, and run verified homebrew and conformance test suites on a modular, portable emulation core.
 - **Core Engineering Challenge**: Accurate hardware timing and bus waitstates without ad-hoc game hacks. The memory bus controller accurately models electrical waitstates: 0 waitstates for 32-bit IWRAM, 2 waitstates for 16-bit EWRAM, and configurable waitstates for Game Pak ROM.
-- **Status & Policy**: Verified across 32 local core verifiers and public mGBA test suites (11/13 green). Testing is performed strictly against open-source synthetic suites; commercial ROM compatibility remains untested per legal policy.
+- **Status & Policy**: Verified across 32 local core verifiers (36 total including host/smoke runners at revision 7ae99b5) and public mGBA test suites (11/13 green). Testing is performed strictly against legal open-source synthetic suites; commercial ROM compatibility remains untested per legal policy.
 
 ---
 
@@ -89,8 +89,8 @@ The six systems below demonstrate the core of my technical work across AI infras
 [![ProofPath In-Browser WebAssembly Learning Sandbox](assets/showcase/proofpath-lesson.jpg)](https://github.com/gthgomez/ProofPath)
 
 - **What It Looks Like Running**: An interactive mobile and web learning application where students write and execute real Python code directly inside the browser with immediate automated test assertion feedback.
-- **What Users Accomplish**: Master programming fundamentals completely offline, execute code without paid server sandboxes, and export verifiable JSON evidence packets demonstrating genuine problem-solving mastery.
-- **Core Engineering Challenge**: Running untrusted Python code safely in the browser without server dependencies while generating tamper-evident learning records. ProofPath isolates Pyodide WebAssembly inside dedicated WebWorkers with execution watchdogs, computing a 32-bit DJB2 content hash over passing code.
+- **What Users Accomplish**: Master programming fundamentals directly in the browser without paid server sandboxes, and export structured JSON evidence packets demonstrating genuine problem-solving mastery. (Initial load requires downloading the Pyodide WebAssembly runtime from CDN; subsequent lesson execution and testing operate fully offline via WebWorker and local SQLite caching).
+- **Core Engineering Challenge**: Running untrusted Python code safely in the browser without server dependencies while generating structured provenance records. ProofPath isolates Pyodide WebAssembly inside dedicated WebWorkers with execution watchdogs, computing a 32-bit DJB2 content hash (`cf-` prefix) over passing code.
 - **Architecture**: Bundles Pyodide WebAssembly with a local SQLite database for offline progress retention, supporting structured JSON portfolio export under a 4-tier evidence trust model.
 
 ---
