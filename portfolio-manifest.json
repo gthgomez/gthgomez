@@ -28,6 +28,7 @@
     }
   ],
   "evidence_links": [],
+  "showcase_manifest": "docs/showcase-manifest.json",
   "release_policy": "none (profile repository; no releases, no supported versions)",
   "cross_repo_dependencies": [],
   "flagship_role": "account index and methodology home; PF04 derives the account index from per-repo manifests",

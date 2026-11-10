@@ -16,9 +16,17 @@ Python is my primary programming language, complemented by modern TypeScript/Jav
 
 The six systems below demonstrate the core of my technical work across AI infrastructure, financial modeling, full-stack routing, computer architecture, offline-first education, and game simulation.
 
-```
-1. Babel ─── 2. MonteCarlo-Ledger ─── 3. Prismatix ─── 4. GBA_Emulator ─── 5. ProofPath ─── 6. Reliquary
-```
+| Flagship | Technical Domain | Primary Stack | Key Verified Deliverable | Case Study |
+|---|---|---|---|---|
+| **[Babel](#1-babel--ai-coding-agent-runtime--evidence-verifier)** | AI Agent Runtime & Verification | TypeScript, Electron, SQLite | Evidence-bound task completion receipts | [Case Study](docs/case-studies/babel.md) |
+| **[MonteCarlo-Ledger](#2-montecarlo-ledger--deterministic-cash-flow-forecaster--risk-engine)** | Deterministic Finance & Risk | Python 3.10+, FastAPI, SQLite | Two-stage calendar pacing + Monte Carlo | [Case Study](docs/case-studies/monte-carlo-ledger.md) |
+| **[Prismatix](#3-prismatix--multi-provider-ai-chat-with-cost-governance)** | Multi-Model Routing & Streaming | React, Deno Edge, Supabase | Explainable Auto-Routing & fail-closed admission | [Case Study](docs/case-studies/prismatix.md) |
+| **[GBA_Emulator](#4-gba_emulator--c17-emulator-core--conformance-lab)** | Systems & Computer Architecture | C++17, SDL3, CMake | ARMv4T core & mGBA test suite conformance | [Case Study](docs/case-studies/gba-emulator.md) |
+| **[ProofPath](#5-proofpath--offline-first-learning-system-with-verifiable-proofs)** | Offline-First Learning & WASM | React Native, Pyodide, SQLite | Pyodide WebWorker sandbox & provenance export | [Case Study](docs/case-studies/proofpath.md) |
+| **[reliquary](#6-reliquary--creature-collecting-web-rpg--engine)** | Game Simulation Engine & PWA | TypeScript, React, HTML5 Canvas | Pure headless battle engine & safe-spawn math | [Case Study](docs/case-studies/reliquary.md) |
+
+> [!NOTE]
+> All six flagships are pinned publicly on [github.com/gthgomez](https://github.com/gthgomez). Custom pin display reordering requires an authenticated GitHub web session (`BLOCKED_USER_ACTION`).
 
 ---
 
@@ -29,7 +37,7 @@ The six systems below demonstrate the core of my technical work across AI infras
 
 - **The Problem**: AI coding agents routinely suffer from hallucinatory completion—claiming a complex task is resolved without proving that edits compile, pass test suites, or respect project invariants.
 - **Technical Solution**: Babel wraps agent execution in an inspectable, multi-interface runtime (CLI, TUI, and desktop). It enforces **evidence-bound task completion**: an agent cannot declare a task done in text alone; it must produce a machine-verifiable execution receipt containing process exit codes, file diffs, and verification proofs.
-- **Architecture**: Employs a layered operational prompt hierarchy (System Router, Behavioral OS, Domain Architects, and Model Adapters), an SQLite full-text index for sub-millisecond symbol retrieval, and process supervision with watchdog timeouts.
+- **Architecture**: Employs a layered operational prompt hierarchy (System Router, Behavioral OS, Domain Architects, and Model Adapters), an SQLite full-text index for fast heuristic symbol lookup, and process supervision with watchdog timeouts.
 - **Links**: [Repository](https://github.com/gthgomez/Babel) • [Technical Case Study](docs/case-studies/babel.md) • [Latest Releases](https://github.com/gthgomez/Babel/releases/latest) • [Web Portal](https://babel-origin-site.vercel.app)
 
 ---
@@ -41,7 +49,7 @@ The six systems below demonstrate the core of my technical work across AI infras
 
 - **The Problem**: Most personal budgeting tools display current balances but cannot evaluate cash-flow fragility: *"How much can I safely spend before my next paycheck without risking a scheduled obligation?"*
 - **Technical Solution**: Implements a **two-stage forecasting engine**. Stage 1 projects recurring bills, payroll, and debt amortization onto an exact calendar timeline over a 90-day horizon. Stage 2 executes thousands of seeded Monte Carlo stochastic trials to stress-test that timeline against surprise expenses and paycheck variance.
-- **Architecture**: Enforces double-entry ledger bookkeeping where balances are strictly derived from transaction logs. Uses 64-bit integer cents throughout to eliminate floating-point drift. Validated through property-based invariant testing.
+- **Architecture**: Enforces a signed-transaction integer-cents ledger (`amount INTEGER NOT NULL`, `type IN ('Income', 'Expense', 'Adjustment')`) where balances are strictly derived from transaction log deltas. Uses 64-bit integer cents throughout to eliminate floating-point drift. Validated through property-based invariant testing.
 - **Links**: [Repository](https://github.com/gthgomez/MonteCarlo-Ledger) • [Technical Case Study](docs/case-studies/monte-carlo-ledger.md) • [Live Web Visualizer](https://montecarlo-ledger.vercel.app) • [Android Companion](https://github.com/gthgomez/MonteCarloLedger-Android)
 
 ---
@@ -53,7 +61,7 @@ The six systems below demonstrate the core of my technical work across AI infras
 
 - **The Problem**: Multi-model chat interfaces typically operate as opaque proxies: they do not explain why a specific model was selected and fail open during pricing changes, risking unexpected cloud billing spikes.
 - **Technical Solution**: A multi-provider AI chat client featuring **explainable model routing**, low-latency Server-Sent Events (SSE) streaming, and **fail-closed budget controls**. When set to Auto mode, an inline inspector displays the evaluated task class, selected model, fallback chain, and cost basis.
-- **Architecture**: Built on Deno Edge Functions and Supabase Postgres. Pre-inference admission gates verify user budget reservations before requests reach upstream model providers. Includes client-side authenticated key encryption (BYOK).
+- **Architecture**: Built on Deno Edge Functions and Supabase Postgres. Pre-inference admission gates reject unpriced models with HTTP 409 Conflict and database admission outages with HTTP 503 before requests reach external LLM providers. Includes client-side authenticated key encryption (BYOK). Production web deployment runs commit `7d143a1`.
 - **Links**: [Repository](https://github.com/gthgomez/Prismatix) • [Technical Case Study](docs/case-studies/prismatix.md) • [Live Web App](https://prismatix-app.vercel.app) • [On-Device Companion](https://github.com/gthgomez/PrismLocal)
 
 ---
@@ -77,8 +85,8 @@ The six systems below demonstrate the core of my technical work across AI infras
 [![ProofPath Lesson Screen](assets/showcase/proofpath-lesson.jpg)](https://github.com/gthgomez/ProofPath)
 
 - **The Problem**: Online coding platforms often encourage passive video viewing, rely on expensive server-side cloud sandboxes that stop working offline, and issue certificates that recruiters cannot independently verify.
-- **Technical Solution**: An offline-first mobile and web application combining an **in-browser WebAssembly execution sandbox** with **tamper-resistant portfolio evidence export**. Learners write code locally, observe real test suite grading, and export cryptographically signed completion receipts.
-- **Architecture**: Bundles Pyodide WebAssembly in an isolated worker thread with watchdog timeout protection. Encrypted local storage retains student progress across offline sessions, with support for JSON backup migration.
+- **Technical Solution**: An offline-first mobile and web application combining an **in-browser WebAssembly execution sandbox** with **structured, provenance-aware portfolio evidence export**. Learners write code locally, observe real test suite grading, and export structured JSON evidence packets with a four-tier trust model (`auto_verified_code_lab`, `reproduction_package_supplied`, `manual_verifier_output`, `manual_note`).
+- **Architecture**: Bundles Pyodide WebAssembly in an isolated worker thread with watchdog timeout protection. Structured local SQLite storage retains student progress across offline sessions, with support for JSON backup migration.
 - **Links**: [Repository](https://github.com/gthgomez/ProofPath) • [Technical Case Study](docs/case-studies/proofpath.md) • [Project Architecture Notes](https://github.com/gthgomez/ProofPath/blob/main/docs/README.md)
 
 ---
@@ -89,7 +97,7 @@ The six systems below demonstrate the core of my technical work across AI infras
 [![Reliquary Battle Interface](assets/showcase/reliquary-battle.png)](https://github.com/gthgomez/reliquary)
 
 - **The Problem**: Web-based games frequently couple game simulation to browser animation frames, causing battle math desync, frame drops, and corrupted save files across version updates.
-- **Technical Solution**: A medieval-fantasy creature-binding RPG applying software engineering rigor to web gaming. Features a **pure headless battle engine** decoupled from presentation rendering, a 2D tilemap collision system, safe-spawn algorithms, and full Progressive Web App (PWA) offline support.
+- **Technical Solution**: A playable browser-based fantasy creature-binding RPG prototype applying software engineering rigor to web gaming. Features a **pure headless battle engine** decoupled from presentation rendering, a 2D tilemap collision system, safe-spawn algorithms, and full Progressive Web App (PWA) offline support.
 - **Architecture**: Turn-based damage and status calculations resolve deterministically upon action confirmation; visual particle effects merely illustrate resolved state. Supports keyboard, gamepad, and responsive mobile touch controls.
 - **Links**: [Repository](https://github.com/gthgomez/reliquary) • [Technical Case Study](docs/case-studies/reliquary.md) • [Playable Web Deployment](https://reliquary-dusky.vercel.app) • [Architecture Guide](https://github.com/gthgomez/reliquary/blob/main/docs/ARCHITECTURE.md)
 
@@ -100,19 +108,19 @@ The six systems below demonstrate the core of my technical work across AI infras
 The following concrete examples illustrate the engineering challenges addressed across these systems:
 
 ### 1. Evidence-Bound Completion in Agent Runtimes ([Babel](docs/case-studies/babel.md))
-To eliminate agent completion hallucination, Babel decouples text generation from process verification. When an agent proposes code modifications, Babel spawns isolated subprocesses, captures compiler diagnostics and test exit codes, and writes a tamper-evident execution receipt. If a verifier check fails, the harness marks the task blocked regardless of model confidence.
+To eliminate agent completion hallucination, Babel decouples text generation from process verification. When an agent proposes code modifications, Babel spawns isolated subprocesses, captures compiler diagnostics and test exit codes, and writes a structured execution receipt. If a verifier check fails, the harness marks the task blocked regardless of model confidence.
 
 ### 2. Path-Dependent Trough Analysis in Finance ([MonteCarlo-Ledger](docs/case-studies/monte-carlo-ledger.md))
 Financial risk is chronological. A net-positive monthly balance provides zero protection if an account experiences a liquidity deficit mid-month. MonteCarlo-Ledger models the exact calendar sequence of bills and paychecks before overlaying stochastic variance. Safe-to-spend recommendations are derived from the 10th percentile minimum balance (the trough distribution) rather than optimistic averages.
 
 ### 3. Fail-Closed Cost Governance at Edge ([Prismatix](docs/case-studies/prismatix.md))
-Multi-model frontends often fail open when upstream providers update model identifiers or modify pricing tables, exposing users to runaway cloud spend. Prismatix implements pre-inference admission reservations on Deno Edge Functions: if a model's token pricing cannot be proven cryptographically against the local registry, the gateway rejects the request with an explicit HTTP 503 error before invoking any paid API.
+Multi-model frontends often fail open when upstream providers update model identifiers or modify pricing tables, exposing users to runaway cloud spend. Prismatix implements pre-inference admission reservations on Deno Edge Functions: unpriced models fail closed with an explicit HTTP 409 Conflict, while admission database outages return HTTP 503, preventing untracked spend before invoking external providers.
 
 ### 4. Cycle-Stepped Memory Waitstates ([GBA_Emulator](docs/case-studies/gba-emulator.md))
 The Game Boy Advance memory bus assigns distinct cycle waitstates to distinct memory regions: 0 waitstates for 32-bit fast IWRAM, 2 waitstates for 16-bit EWRAM, and variable waitstates for cartridge ROM access. GBA_Emulator accurately models these electrical timing constraints inside its C++17 memory controller, ensuring that DMA burst transfers and CPU instruction pipelines synchronize with public hardware test suites.
 
 ### 5. Client-Side WASM Sandboxing & Provenance ([ProofPath](docs/case-studies/proofpath.md))
-Running user-submitted Python code inside a mobile/web client without server sandboxes requires WebAssembly thread isolation. ProofPath runs Pyodide inside dedicated WebWorkers guarded by execution watchdogs. When a lesson passes, the system calculates SHA-256 digests over the submitted source, test assertions, and execution duration, packaging them into an exportable, audit-ready evidence receipt.
+Running user-submitted Python code inside a mobile/web client without server sandboxes requires WebAssembly thread isolation. ProofPath runs Pyodide inside dedicated WebWorkers guarded by execution watchdogs. When a lesson passes, the system calculates a 32-bit DJB2 content hash (`cf-` prefix) over the submitted source, tracks test suite assertions, and packages the results into a structured JSON evidence packet.
 
 ### 6. Decoupling Simulation from Animation Loops ([Reliquary](docs/case-studies/reliquary.md))
 If turn-based combat calculations depend on animation timers, backgrounding the browser tab or experiencing frame drops will desynchronize game state. Reliquary models combat as pure, immutable functional state transitions that evaluate immediately upon turn confirmation. The Canvas 2D engine subsequently queues visual effects without delaying game state progression.
@@ -125,7 +133,7 @@ I treat software engineering as an intentional discipline centered on requiremen
 
 My personal workflow is documented in detail in [How I Build](docs/how-i-build.md):
 - **Human Engineering Direction**: I define system architecture, data models, invariant boundaries, acceptance standards, and error-recovery contracts; investigate root causes when verifiers fail; and evaluate competing technical approaches.
-- **AI Coding Agent Implementation**: I pair extensively with AI coding agents to write boilerplate implementations, generate exhaustive unit tests, construct mock fixtures, and explore edge cases.
+- **AI Coding Agent Implementation**: Autonomous coding agents contribute substantial implementation across core algorithms, test suites, CLI parsers, and component structures, executing under close human architectural direction, requirements specification, root-cause investigation, and invariant governance.
 - **Evidence-First Verification**: No task is declared complete based on AI generated assertions. Success requires passing clean compiler gates, running property-based test suites, and producing reproducible execution logs.
 
 ---

@@ -19,23 +19,20 @@ permissions:
   contents: read
 
 jobs:
-  lychee:
-    name: Check links
+  check-links:
+    name: Check external links
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - name: Check links in Markdown
-        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          fail: true
-          args: >-
-            --verbose
-            --no-progress
-            --max-retries 3
-            --timeout 20
-            --accept 100..=103,200..=299,429,504
-            --exclude '^https://(www\.)?linkedin\.com'
-            --exclude-path 'tools/tests/fixtures'
-            './**/*.md'
+          python-version: "3.11"
+
+      - name: Verify link checker unit tests
+        run: python -m unittest discover -s tools/tests -p "test_check_links.py"
+
+      - name: Honest external link verification
+        run: python tools/check_links.py --repo . --timeout 15 --max-retries 3

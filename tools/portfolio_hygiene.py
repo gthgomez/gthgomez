@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Portfolio hygiene checker (offline, deterministic, standard library only).
 
-Implements the rules H001-H008 from DESIGNS/HYGIENE_CHECKER_SPEC.md in the
+Implements the rules H001-H009 from DESIGNS/HYGIENE_CHECKER_SPEC.md in the
 portfolio audit packet. This checker:
 
   * never executes README snippets, workflow contents, or any URL;
@@ -35,6 +35,33 @@ SCHEMA_VERSION = 1
 # Truth/status vocabulary from DESIGNS/TRUTH_STATUS.md (evidence receipt v1).
 CHECK_STATES = {"PASS", "FAIL", "BLOCKED", "NOT_RUN", "UNKNOWN", "INCONCLUSIVE"}
 NON_GREEN_STATES = {"FAIL", "BLOCKED", "NOT_RUN", "UNKNOWN", "INCONCLUSIVE"}
+
+SHOWCASE_REQUIRED_FIELDS = (
+    "schema_version",
+    "manifest_name",
+    "generated_at_utc",
+    "flagships",
+)
+
+FLAGSHIP_REQUIRED_FIELDS = (
+    "id",
+    "name",
+    "repository",
+    "source_sha",
+    "captured_version",
+    "capture_date",
+    "demonstration_type",
+    "primary_media",
+    "live_url",
+    "capture_method",
+    "test_evidence",
+    "known_limitations",
+    "verification_status",
+)
+
+VALID_VERIFICATION_STATUSES = {"CURRENT", "HISTORICAL"}
+HEX_SHA_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)?$")
 
 RECEIPT_REQUIRED_FIELDS = (
     "schema_version",
@@ -495,6 +522,9 @@ def check_evidence(report: Report, config: dict, repo: str, head: str | None) ->
             report.add("H006", "blocking", rel, 0,
                        "evidence receipt is not valid JSON", str(exc))
             continue
+        if isinstance(receipt, dict) and receipt.get("manifest_name") == "showcase-evidence-manifest":
+            # Showcase manifests are checked by H009
+            continue
         missing = [k for k in RECEIPT_REQUIRED_FIELDS if k not in receipt]
         if missing:
             report.add("H006", "blocking", rel, 0,
@@ -635,6 +665,139 @@ def check_commands(report: Report, config: dict, repo: str) -> None:
                                "that does not exist in the checkout", token)
 
 
+# ---------------------------------------------------------------- H009
+EXPECTED_FLAGSHIP_IDS = (
+    "babel",
+    "monte-carlo-ledger",
+    "prismatix",
+    "gba-emulator",
+    "proofpath",
+    "reliquary",
+)
+
+
+def check_showcase_manifest(report: Report, config: dict, repo: str) -> None:
+    manifest_rel = config.get("showcase_manifest")
+    if not manifest_rel:
+        candidate = os.path.join(repo, "docs", "showcase-manifest.json")
+        if os.path.isfile(candidate) or config.get("project_type") == "profile":
+            manifest_rel = "docs/showcase-manifest.json"
+        else:
+            return
+
+    full = confine(repo, manifest_rel)
+    if full is None:
+        report.add("H009", "blocking", manifest_rel.replace("\\", "/"), 0,
+                   "showcase manifest path escapes the repository",
+                   manifest_rel.replace("\\", "/"))
+        return
+    if not os.path.isfile(full):
+        report.add("H009", "blocking", manifest_rel, 0,
+                   "showcase manifest file does not exist", manifest_rel)
+        return
+
+    try:
+        with open(full, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        report.add("H009", "blocking", manifest_rel, 0,
+                   "showcase manifest is not valid JSON", str(exc))
+        return
+
+    missing = [k for k in SHOWCASE_REQUIRED_FIELDS if k not in data]
+    if missing:
+        report.add("H009", "blocking", manifest_rel, 0,
+                   f"showcase manifest missing required fields: {', '.join(missing)}",
+                   ", ".join(missing))
+        return
+
+    flagships = data.get("flagships")
+    if not isinstance(flagships, list) or not flagships:
+        report.add("H009", "blocking", manifest_rel, 0,
+                   "showcase manifest flagships must be a non-empty list", "flagships")
+        return
+
+    seen_ids: set[str] = set()
+    for idx, item in enumerate(flagships):
+        if not isinstance(item, dict):
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship entry at index {idx} must be an object", str(idx))
+            continue
+        f_id = item.get("id", f"entry-{idx}")
+        seen_ids.add(f_id)
+
+        missing_fields = [k for k in FLAGSHIP_REQUIRED_FIELDS if k not in item]
+        if missing_fields:
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' missing required fields: {', '.join(missing_fields)}",
+                       ", ".join(missing_fields))
+            continue
+
+        sha = str(item.get("source_sha", ""))
+        if not HEX_SHA_RE.match(sha):
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' has invalid git hex SHA: '{sha}'", sha)
+
+        cdate = str(item.get("capture_date", ""))
+        if not DATE_RE.match(cdate):
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' has invalid capture_date format: '{cdate}'", cdate)
+
+        status = item.get("verification_status")
+        if status not in VALID_VERIFICATION_STATUSES:
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' has invalid verification_status: '{status}'", str(status))
+
+        limitations = item.get("known_limitations")
+        if not isinstance(limitations, str) or not limitations.strip():
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' has empty known_limitations disclaimer", str(limitations))
+
+        # Media checks
+        media_paths: list[tuple[str, str]] = []
+        if item.get("primary_media"):
+            media_paths.append(("primary_media", item["primary_media"]))
+        for sm in item.get("supporting_media", []):
+            media_paths.append(("supporting_media", sm))
+
+        for m_kind, m_path in media_paths:
+            if not isinstance(m_path, str) or not m_path.strip():
+                report.add("H009", "blocking", manifest_rel, 0,
+                           f"flagship '{f_id}' has invalid {m_kind} path", str(m_path))
+                continue
+
+            # Workstation path leaks
+            leaked = False
+            for pat, desc in PRIVATE_PATH_PATTERNS:
+                if pat.search(m_path):
+                    report.add("H009", "blocking", manifest_rel, 0,
+                               f"flagship '{f_id}' {m_kind} leaks workstation path ({desc}): {m_path}",
+                               m_path)
+                    leaked = True
+                    break
+            if leaked:
+                continue
+
+            # Confinement and file existence
+            m_full = confine(repo, m_path)
+            if m_full is None:
+                report.add("H009", "blocking", manifest_rel, 0,
+                           f"flagship '{f_id}' {m_kind} path escapes repository: {m_path}", m_path)
+            elif not os.path.isfile(m_full):
+                report.add("H009", "blocking", manifest_rel, 0,
+                           f"flagship '{f_id}' {m_kind} file does not exist: {m_path}", m_path)
+            elif os.path.getsize(m_full) == 0:
+                report.add("H009", "blocking", manifest_rel, 0,
+                           f"flagship '{f_id}' {m_kind} file is empty (0 bytes): {m_path}", m_path)
+
+    if config.get("project_type") == "profile":
+        missing_flagships = set(EXPECTED_FLAGSHIP_IDS) - seen_ids
+        if missing_flagships:
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"showcase manifest missing expected flagships: {', '.join(sorted(missing_flagships))}",
+                       ", ".join(sorted(missing_flagships)))
+
+
 DOC_EXTENSIONS = (".md", ".markdown")
 
 
@@ -680,7 +843,7 @@ def run_check(repo: str, config_path: str, fmt: str, head_override: str | None) 
         # coverage.rules_run must reflect executed rules, not only rules
         # that happened to emit findings on this run.
         report.rules_run.update(
-            ("H001", "H002", "H003", "H004", "H005", "H006", "H007", "H008"))
+            ("H001", "H002", "H003", "H004", "H005", "H006", "H007", "H008", "H009"))
         check_private_paths(report, config, repo, docs)
         check_links(report, config, repo, docs)
         check_license_policy(report, config, repo)
@@ -688,6 +851,7 @@ def run_check(repo: str, config_path: str, fmt: str, head_override: str | None) 
         check_evidence(report, config, repo, head)
         check_volatile_prose(report, config, repo, docs)
         check_commands(report, config, repo)
+        check_showcase_manifest(report, config, repo)
     except CheckerError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
