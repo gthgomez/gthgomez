@@ -2,7 +2,7 @@
 
 **Local-first Python financial ledger with deterministic cash-flow forecasts, Monte Carlo risk modeling, and contract-based tests.**
 
-![Monte Carlo Ledger Architecture](../../assets/showcase/monte-carlo-architecture.svg)
+![Monte Carlo Ledger Dashboard](../../assets/showcase/monte-carlo-dashboard.png)
 
 ## 1. Problem Being Solved
 
@@ -25,6 +25,8 @@ MonteCarlo-Ledger solves this by decoupling financial forecasting into a **two-s
 3. **Data Integrity & Local Sovereignty**: Financial data must remain private, offline-first, and protected against corruption, orphaned records, and foreign key drift without relying on proprietary third-party cloud backends.
 
 ## 4. Architecture and Major Subsystems
+
+![Monte Carlo Ledger Two-Stage Architecture](../../assets/showcase/monte-carlo-architecture.svg)
 
 ```mermaid
 flowchart TD
@@ -87,7 +89,9 @@ pytest tests
 
 ## 9. User-Facing Demonstration
 
-Through the interactive CLI:
+![Monte Carlo Decision Studio and Cash Flow Timeline](../../assets/showcase/monte-carlo-decision-studio.png)
+
+Through the interactive web companion and CLI:
 1. Initialize a new local ledger database: `python -m monte_carlo_ledger init`.
 2. Register recurring payroll and fixed obligations (rent, insurance, utilities).
 3. Generate a 90-day cash-flow forecast showing daily projected balances.
