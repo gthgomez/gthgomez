@@ -2,7 +2,7 @@
 
 **C++17 Game Boy Advance emulator core with an SDL desktop host, deterministic tests, and public hardware-conformance evidence.**
 
-![GBA Emulator Architecture](../../assets/showcase/gba-architecture.svg)
+![GBA Emulator Desktop Host Running Synthetic Video Conformance Test](../../assets/showcase/gba-emulator-running.png)
 
 ## 1. Problem Being Solved
 
@@ -23,6 +23,8 @@ GBA_Emulator approaches Game Boy Advance emulation from a **disciplined systems-
 3. **Scanline-Synchronized PPU & DMA**: The Picture Processing Unit renders 240x160 pixels line by line across 4 distinct background modes and 2 affine transformation modes. Direct Memory Access (DMA) channels must trigger synchronously during H-Blank or V-Blank intervals without causing race conditions or audio buffer underruns.
 
 ## 4. Architecture and Major Subsystems
+
+![GBA Emulator Subsystem Architecture](../../assets/showcase/gba-architecture.svg)
 
 ```mermaid
 flowchart TD
@@ -91,6 +93,8 @@ All 32 local core test binaries pass cleanly on Windows and Linux runners with z
 
 ## 9. User-Facing Demonstration
 
+![GBA Emulator Desktop Host Window](../../assets/showcase/gba-emulator-desktop.png)
+
 Running the desktop interactive host:
 1. Compile and launch `gba-desktop` via CMake.
 2. Load an open-source test ROM or homebrew binary.
@@ -99,6 +103,7 @@ Running the desktop interactive host:
 
 ## 10. Current Limitations
 
+- **Commercial-ROM Compatibility (Untested / No Claim)**: Testing and verification are conducted exclusively using legal, open-source synthetic test ROMs and the mGBA hardware conformance suite. Commercial game ROMs (such as Pokemon Emerald) are absent from local test suites and remain untested per legal policy.
 - **Hardware Conformance Coverage**: While core instruction and memory tests are green, complex sub-cycle timing corner cases (`timing` suite 1956/2020) remain open for future hardening.
 - **Physical Mobile Optimization**: Android physical-device qualification identified audio buffer underruns under throttled mobile CPU governors, maintained transparently as a known roadmap item in `docs/evidence/`.
 
