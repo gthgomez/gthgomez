@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "manifest_name": "showcase-evidence-manifest",
-  "generated_at_utc": "2026-11-10T02:45:00Z",
+  "generated_at_utc": "2026-11-10T03:35:00Z",
   "account": "gthgomez",
   "flagships": [
     {
@@ -27,10 +27,13 @@
       "repository": "gthgomez/MonteCarlo-Ledger",
       "source_sha": "78938af25a33fcce6978f42a17dd3610fbc5e12f",
       "captured_version": "0.1.0",
-      "capture_date": "2026-11-09",
+      "capture_date": "2026-11-10",
       "demonstration_type": "web-ui-capture",
       "primary_media": "assets/showcase/monte-carlo-dashboard.png",
-      "supporting_media": ["assets/showcase/monte-carlo-decision-studio.png"],
+      "supporting_media": [
+        "assets/showcase/monte-carlo-decision-studio.png",
+        "assets/showcase/monte-carlo-architecture.svg"
+      ],
       "live_url": "https://montecarlo-ledger.vercel.app",
       "capture_method": "Live browser capture of Monte Carlo ledger companion showing cash flow forecast, P10 safe-to-spend buffer, and interactive decision studio",
       "test_evidence": "184/184 pytest tests passed (Hypothesis property invariants, integer math safety, API contracts)",
@@ -44,18 +47,19 @@
       "repository": "gthgomez/Prismatix",
       "source_sha": "5d8127fd2357cc0a4fd3ed87e2ba5582c3d90913",
       "captured_version": "0.2.0-pre.1",
-      "capture_date": "2026-11-09",
+      "capture_date": "2026-11-10",
       "demonstration_type": "web-ui-capture",
-      "primary_media": "assets/showcase/prismatix-live-chat.png",
+      "primary_media": "assets/showcase/prismatix-overview.jpg",
       "supporting_media": [
-        "assets/showcase/prismatix-routing-intelligence.png",
-        "assets/showcase/prismatix-chat-clean.png"
+        "assets/showcase/prismatix-architecture.jpg",
+        "assets/showcase/prismatix-fast-concept.jpg",
+        "assets/showcase/prismatix-debate.jpg"
       ],
       "live_url": "https://prismatix-app.vercel.app",
-      "capture_method": "Live authenticated user capture on prismatix-app.vercel.app demonstrating multi-model chat, explainable routing intelligence, and spend analytics",
+      "capture_method": "Scripted interactive public demonstration on prismatix-app.vercel.app showcasing multi-model routing intelligence, model tiers, and streaming UX (live provider inference requires user-provided BYOK keys)",
       "test_evidence": "912/912 vitest tests passed (routing matrix, SSE streaming, fail-closed admission)",
       "deployment_sha": "7d143a16e60eca5d503578374a90aec421e99fc8",
-      "known_limitations": "Production deployment is at commit 7d143a1 (PR #59); newer Wave 2 knowledge and multimodal features exist on default branch; live site uses BYOK API keys.",
+      "known_limitations": "Production deployment is at commit 7d143a1 (PR #59); newer Wave 2 knowledge and multimodal features exist on default branch; BYOK credential storage uses server-side AES-256-GCM authenticated encryption in Deno Edge Functions with server-managed secrets.",
       "verification_status": "CURRENT"
     },
     {
@@ -64,13 +68,15 @@
       "repository": "gthgomez/GBA_Emulator",
       "source_sha": "7ae99b5122c06b3bbe0ec8fe7e41fe73c44f47e8",
       "captured_version": "0.1.0-conformance",
-      "capture_date": "2026-11-09",
+      "capture_date": "2026-11-10",
       "demonstration_type": "native-desktop-capture",
       "primary_media": "assets/showcase/gba-emulator-running.png",
-      "supporting_media": ["assets/showcase/gba-emulator-desktop.png"],
+      "supporting_media": [
+        "assets/showcase/gba-architecture.svg"
+      ],
       "live_url": "https://github.com/gthgomez/GBA_Emulator/blob/main/docs/open-issues-status.md",
-      "capture_method": "Direct execution capture of C++17 SDL3 gba-desktop binary running interactive synthetic video test suite at 3x integer scale; legal mGBA test ROM verified",
-      "test_evidence": "32/32 local core C++ verifiers passed; 11/13 public mGBA test suites green",
+      "capture_method": "Headless PPU framebuffer capture of C++17 emulation core running legal synthetic video conformance fixture at 3x integer scale (720x480 RGB)",
+      "test_evidence": "32/32 local core C++ verifiers passed (36 total including host/smoke runners at revision 7ae99b5); 11/13 public mGBA test suites green",
       "deployment_sha": "N/A",
       "known_limitations": "Commercial ROM compatibility: NO CLAIM. Tested exclusively against synthetic video suite and local legal mGBA conformance suite (suite.gba). Commercial game ROMs (such as Pokemon Emerald) are absent from local test harness and untested per legal policy.",
       "verification_status": "CURRENT"
@@ -81,7 +87,7 @@
       "repository": "gthgomez/ProofPath",
       "source_sha": "05df59e1a94a95eef4f1a688bc089095e0451783",
       "captured_version": "0.1.0",
-      "capture_date": "2026-11-08",
+      "capture_date": "2026-11-10",
       "demonstration_type": "mobile-web-ui-capture",
       "primary_media": "assets/showcase/proofpath-lesson.jpg",
       "supporting_media": [
@@ -92,7 +98,7 @@
       "capture_method": "Chromium mobile viewport capture of interactive lesson, test execution, and career path progression",
       "test_evidence": "612/612 vitest tests passed (66 test files, 1 skipped; Pyodide worker isolation, SQLite persistence, evidence trust)",
       "deployment_sha": "05df59e1a94a95eef4f1a688bc089095e0451783",
-      "known_limitations": "Initial WebAssembly Pyodide cold-start download requires several seconds; evidence records are structured JSON provenance packets, not cryptographic digital signatures.",
+      "known_limitations": "Initial WebAssembly Pyodide cold-start download requires CDN asset retrieval; subsequent execution operates offline. Evidence records are structured JSON provenance packets with non-cryptographic DJB2 content hashing (cf- prefix), not cryptographic digital signatures.",
       "verification_status": "CURRENT"
     },
     {

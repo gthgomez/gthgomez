@@ -2,7 +2,7 @@
 
 **Multi-provider AI chat with explainable model routing, streaming responses, and fail-closed pricing controls.**
 
-[![Prismatix Live Authenticated Chat Interface](../../assets/showcase/prismatix-live-chat.png)](../../assets/showcase/prismatix-live-chat.png)
+[![Prismatix Multi-Model Interface & Routing](../../assets/showcase/prismatix-overview.jpg)](../../assets/showcase/prismatix-overview.jpg)
 
 ## 1. Problem Being Solved
 
@@ -65,7 +65,7 @@ flowchart TD
 
 - **Pre-Inference Admission Reservation**: Before a request reaches an external LLM provider, Prismatix verifies that the user has sufficient remaining budget and writes a tentative reservation. Once streaming terminates, the ledger settles the exact cost based on actual tokens emitted.
 - **Explainable Model Selection**: When set to "Auto" mode, Prismatix does not obscure the decision. The UI renders a dedicated explanation card detailing the evaluated task class, the primary model selected, the fallback chain, and the cost basis.
-- **Client-Side Key Encryption (AES-GCM)**: Connected BYOK keys are encrypted with authenticated credentials before storage and decrypted only inside isolated edge worker environments.
+- **Server-Side Key Encryption (AES-256-GCM)**: Connected BYOK keys are encrypted with authenticated AES-256-GCM in Deno Edge Functions using server-managed encryption secrets before storage in Supabase Postgres, and decrypted only within isolated edge worker request execution contexts.
 
 ## 6. Alternatives and Tradeoffs
 
@@ -94,21 +94,22 @@ npm test
 
 ## 9. User-Facing Demonstration
 
-[![Prismatix Explainable Routing Intelligence](../../assets/showcase/prismatix-routing-intelligence.png)](../../assets/showcase/prismatix-routing-intelligence.png)
+[![Prismatix Fast Concept & Multi-Model Routing](../../assets/showcase/prismatix-fast-concept.jpg)](../../assets/showcase/prismatix-fast-concept.jpg)
 
 Visiting the live application at [https://prismatix-app.vercel.app](https://prismatix-app.vercel.app):
-1. The user selects "Auto-Router" or a designated frontier model.
-2. An inquiry (e.g., an algorithmic systems coding question) is submitted.
-3. The interface immediately renders the **Route Explanation**, highlighting that a deep reasoning model was selected due to complex code generation requirements.
+1. The user selects "Auto-Router" or a designated frontier model tier.
+2. In the interactive demonstration, scripted prompt scenarios illustrate the **Route Explanation Inspector**, showing how tasks are categorized (code generation, deep reasoning, or fast concept explanation) and routed to cost-optimal models.
+3. Live custom multi-turn chat is enabled by adding your own provider API keys via the BYOK settings panel.
 4. Tokens stream in real time with live token count telemetry.
 5. Upon completion, a verified Cost Badge displays the calculated session cost.
+6. A recorded video walkthrough is available at the [Prismatix Workflow Demonstration](https://github.com/gthgomez/Prismatix/blob/main/docs/showcase/media/workflow.mp4).
 
 ## 10. Current Limitations
 
 - **Production Deployment Status**: The live production web deployment at [https://prismatix-app.vercel.app](https://prismatix-app.vercel.app) runs commit `7d143a1` (PR #59). Newer Wave 2 features (knowledge ingestion and multimodal auto-routing) exist on the default `main` branch (`5d8127f`) and are validated by tests.
+- **BYOK Key Model**: Live provider calls require individual user API keys; scripted demo scenarios demonstrate routing intelligence without active billing.
 - **Registered Tariffs, Not Cryptographic Proofs**: Pricing verification matches against a curated registry of provider pricing tariffs and enforces fail-closed execution rather than cryptographic pricing proofs.
 - **Provider Outages**: Third-party model API downtime or gateway degradation directly affects route availability; the fallback chain mitigates but cannot eliminate upstream outages.
-- **Free Tier Provider Limits**: When running under public demonstration mode with mock or community gateways, rate limits apply to prevent abuse.
 
 ## 11. Specific Contributions and AI-Assisted Workflow
 
@@ -119,4 +120,5 @@ Visiting the live application at [https://prismatix-app.vercel.app](https://pris
 
 - **Canonical Repository**: [https://github.com/gthgomez/Prismatix](https://github.com/gthgomez/Prismatix)
 - **Production Web Deployment**: [https://prismatix-app.vercel.app](https://prismatix-app.vercel.app)
+- **Workflow Video Demonstration**: [https://github.com/gthgomez/Prismatix/blob/main/docs/showcase/media/workflow.mp4](https://github.com/gthgomez/Prismatix/blob/main/docs/showcase/media/workflow.mp4)
 - **On-Device Companion**: [https://github.com/gthgomez/PrismLocal](https://github.com/gthgomez/PrismLocal)

@@ -66,7 +66,7 @@ flowchart TD
 
 ## 5. Important Engineering Decisions
 
-- **Offline-First by Design**: All core curriculum content, test runners, and WebAssembly binaries are bundled locally into the client. Learners can study, code, and pass verification checks on an airplane with zero network access.
+- **Offline-First by Design**: Core curriculum content, test runners, and client assets operate locally. Initial setup downloads and caches the Pyodide WebAssembly runtime from CDN; subsequent lesson execution, curriculum progression, and test assertions operate fully offline with zero network access.
 - **Local Progress Persistence**: Progress is stored in a structured local SQLite database (`expo-sqlite` on native / indexed storage on web) with support for JSON migration and backup export/restore, ensuring students never lose completed milestones.
 - **Dual Verification (Run File vs. Run Checks)**: Learners have access to two distinct execution modes: "Run File" outputs standard terminal stdout for interactive experimentation, while "Run Checks" executes the authoritative unit grading suite without leaking answers.
 
