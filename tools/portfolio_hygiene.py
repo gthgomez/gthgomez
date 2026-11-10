@@ -26,8 +26,10 @@ import hashlib
 import json
 import os
 import re
+import struct
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from typing import Any
 
 SCHEMA_VERSION = 1
@@ -675,6 +677,73 @@ EXPECTED_FLAGSHIP_IDS = (
     "reliquary",
 )
 
+MAX_MEDIA_BYTES = 2 * 1024 * 1024  # 2MB
+ALLOWED_MEDIA_EXTENSIONS = (".png", ".jpg", ".jpeg", ".svg", ".webp", ".gif", ".mp4")
+
+
+def validate_media_file_integrity(report: Report, manifest_rel: str, f_id: str,
+                                 m_kind: str, m_path: str, m_full: str) -> None:
+    size = os.path.getsize(m_full)
+    if size > MAX_MEDIA_BYTES:
+        report.add("H009", "blocking", manifest_rel, 0,
+                   f"flagship '{f_id}' {m_kind} file exceeds 2MB limit ({size} bytes): {m_path}",
+                   m_path)
+        return
+
+    ext = os.path.splitext(m_path)[1].lower()
+    if ext not in ALLOWED_MEDIA_EXTENSIONS:
+        report.add("H009", "blocking", manifest_rel, 0,
+                   f"flagship '{f_id}' {m_kind} has unsupported file extension: {m_path}",
+                   m_path)
+        return
+
+    try:
+        with open(m_full, "rb") as f:
+            head = f.read(64)
+    except OSError as exc:
+        report.add("H009", "blocking", manifest_rel, 0,
+                   f"flagship '{f_id}' {m_kind} cannot be read: {exc}", m_path)
+        return
+
+    if ext == ".png":
+        if not head.startswith(b"\x89PNG\r\n\x1a\n"):
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' {m_kind} is not a valid PNG (missing PNG signature): {m_path}",
+                       m_path)
+        elif len(head) >= 24 and head[12:16] == b"IHDR":
+            w, h = struct.unpack(">II", head[16:24])
+            if w == 0 or h == 0:
+                report.add("H009", "blocking", manifest_rel, 0,
+                           f"flagship '{f_id}' {m_kind} has zero or invalid dimensions: {m_path}",
+                           m_path)
+    elif ext in (".jpg", ".jpeg"):
+        if not head.startswith(b"\xff\xd8"):
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' {m_kind} is not a valid JPEG (missing SOI marker): {m_path}",
+                       m_path)
+    elif ext == ".gif":
+        if not (head.startswith(b"GIF87a") or head.startswith(b"GIF89a")):
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' {m_kind} is not a valid GIF: {m_path}",
+                       m_path)
+    elif ext == ".svg":
+        try:
+            tree = ET.parse(m_full)
+            root_tag = tree.getroot().tag.lower()
+            if not root_tag.endswith("svg"):
+                report.add("H009", "blocking", manifest_rel, 0,
+                           f"flagship '{f_id}' {m_kind} root element is not <svg>: {m_path}",
+                           m_path)
+        except ET.ParseError as exc:
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' {m_kind} is not a valid SVG (XML parse error: {exc}): {m_path}",
+                       m_path)
+    elif ext == ".mp4":
+        if b"ftyp" not in head[:16]:
+            report.add("H009", "blocking", manifest_rel, 0,
+                       f"flagship '{f_id}' {m_kind} is not a valid MP4 container: {m_path}",
+                       m_path)
+
 
 def check_showcase_manifest(report: Report, config: dict, repo: str) -> None:
     manifest_rel = config.get("showcase_manifest")
@@ -718,6 +787,7 @@ def check_showcase_manifest(report: Report, config: dict, repo: str) -> None:
         return
 
     seen_ids: set[str] = set()
+    cataloged_media: set[str] = set()
     for idx, item in enumerate(flagships):
         if not isinstance(item, dict):
             report.add("H009", "blocking", manifest_rel, 0,
@@ -789,6 +859,9 @@ def check_showcase_manifest(report: Report, config: dict, repo: str) -> None:
             elif os.path.getsize(m_full) == 0:
                 report.add("H009", "blocking", manifest_rel, 0,
                            f"flagship '{f_id}' {m_kind} file is empty (0 bytes): {m_path}", m_path)
+            else:
+                validate_media_file_integrity(report, manifest_rel, f_id, m_kind, m_path, m_full)
+                cataloged_media.add(os.path.normpath(m_path).replace("\\", "/"))
 
     if config.get("project_type") == "profile":
         missing_flagships = set(EXPECTED_FLAGSHIP_IDS) - seen_ids
@@ -796,6 +869,18 @@ def check_showcase_manifest(report: Report, config: dict, repo: str) -> None:
             report.add("H009", "blocking", manifest_rel, 0,
                        f"showcase manifest missing expected flagships: {', '.join(sorted(missing_flagships))}",
                        ", ".join(sorted(missing_flagships)))
+
+        # Verify no uncataloged showcase assets exist on disk
+        showcase_dir = os.path.join(repo, "assets", "showcase")
+        if os.path.isdir(showcase_dir):
+            for fname in sorted(os.listdir(showcase_dir)):
+                disk_full = os.path.join(showcase_dir, fname)
+                if os.path.isfile(disk_full):
+                    rel_disk = os.path.normpath(os.path.join("assets", "showcase", fname)).replace("\\", "/")
+                    if rel_disk not in cataloged_media:
+                        report.add("H009", "blocking", manifest_rel, 0,
+                                   f"uncataloged media file on disk in assets/showcase: {rel_disk}",
+                                   rel_disk)
 
 
 DOC_EXTENSIONS = (".md", ".markdown")

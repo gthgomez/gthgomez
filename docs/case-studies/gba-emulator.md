@@ -82,7 +82,7 @@ flowchart TD
 ## 8. Reproducible Tests and Validation
 
 The project maintains rigorous automated verification:
-- **Local Core Verifiers**: 32 distinct C++ test binaries validating CPU instructions, barrel shifter logic, memory waitstate timing, and interrupt handling:
+- **Local Core Verifiers**: 32 distinct C++ test binaries validating CPU instructions, barrel shifter logic, memory waitstate timing, and interrupt handling (36 total test fixtures including host and ROM smoke runners at revision `7ae99b5`):
 ```powershell
 .\tools\run-core-tests.ps1
 ```
@@ -93,12 +93,12 @@ All 32 local core test binaries pass cleanly on Windows and Linux runners with z
 
 ## 9. User-Facing Demonstration
 
-![GBA Emulator Desktop Host Window](../../assets/showcase/gba-emulator-desktop.png)
+![GBA Emulator Synthetic Conformance Test](../../assets/showcase/gba-emulator-running.png)
 
 Running the desktop interactive host:
 1. Compile and launch `gba-desktop` via CMake.
-2. Load an open-source test ROM or homebrew binary.
-3. Observe real-time 60 fps rendering at 240x160 resolution scaled with integer nearest-neighbor or bilinear filtering.
+2. Load an open-source test ROM or synthetic conformance binary.
+3. Observe cycle-stepped scanline rendering at 240x160 resolution scaled with 3x integer nearest-neighbor filtering (720x480).
 4. Test real-time input handling, audio playback, cartridge persistence, and instant save/load states.
 
 ## 10. Current Limitations

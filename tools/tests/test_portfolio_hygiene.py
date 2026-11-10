@@ -572,7 +572,11 @@ class ShowcaseManifestTests(FixtureCase):
         os.makedirs(media_dir, exist_ok=True)
         if create_media:
             with open(os.path.join(media_dir, "demo.png"), "wb") as f:
-                f.write(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR...")
+                # Minimal valid 1x1 PNG
+                f.write(
+                    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
+                    b"\x00\x00\x00\rIDATx\x9cc`\x00\x00\x00\x02\x00\x01Haf\xa4\x00\x00\x00\x00IEND\xaeB`\x82"
+                )
 
         manifest = {
             "schema_version": 1,
@@ -671,6 +675,72 @@ class ShowcaseManifestTests(FixtureCase):
         self.assertIn("H009", ids)
         findings = json.loads(proc.stdout)["findings"]
         self.assertTrue(any("invalid verification_status" in f["message"] for f in findings if f["rule_id"] == "H009"))
+
+    def test_corrupt_png_fails(self):
+        tmp = self._create_showcase_fixture()
+        with open(os.path.join(tmp, "assets", "showcase", "demo.png"), "wb") as f:
+            f.write(b"NOT_A_VALID_PNG_SIGNATURE_HEADER")
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+        findings = json.loads(proc.stdout)["findings"]
+        self.assertTrue(any("is not a valid PNG" in f["message"] for f in findings if f["rule_id"] == "H009"))
+
+    def test_oversized_media_fails(self):
+        tmp = self._create_showcase_fixture()
+        with open(os.path.join(tmp, "assets", "showcase", "demo.png"), "wb") as f:
+            f.write(b"\x89PNG\r\n\x1a\n" + b"\x00" * (2 * 1024 * 1024 + 100))
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+        findings = json.loads(proc.stdout)["findings"]
+        self.assertTrue(any("exceeds 2MB limit" in f["message"] for f in findings if f["rule_id"] == "H009"))
+
+    def test_unsupported_media_extension_fails(self):
+        tmp = self._create_showcase_fixture(manifest_modifications={
+            "flagship_0": {"primary_media": "assets/showcase/demo.exe"}
+        })
+        with open(os.path.join(tmp, "assets", "showcase", "demo.exe"), "wb") as f:
+            f.write(b"MZ\x00\x00")
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+        findings = json.loads(proc.stdout)["findings"]
+        self.assertTrue(any("has unsupported file extension" in f["message"] for f in findings if f["rule_id"] == "H009"))
+
+    def test_uncataloged_media_fails_for_profile(self):
+        # When project_type is profile, all 6 flagships are expected, plus no uncataloged files
+        all_flagships = [
+            {
+                "id": fid,
+                "name": fid.title(),
+                "repository": f"gthgomez/{fid}",
+                "source_sha": "1dc598e2a2f1de914591570349708a6f01d66479",
+                "captured_version": "1.0.0",
+                "capture_date": "2026-11-10",
+                "demonstration_type": "web-ui-capture",
+                "primary_media": "assets/showcase/demo.png",
+                "supporting_media": [],
+                "live_url": "https://example.com",
+                "capture_method": "Screenshot",
+                "test_evidence": "Passes",
+                "known_limitations": "None",
+                "verification_status": "CURRENT"
+            }
+            for fid in ("babel", "monte-carlo-ledger", "prismatix", "gba-emulator", "proofpath", "reliquary")
+        ]
+        tmp = self._create_showcase_fixture(
+            manifest_modifications={"flagships": all_flagships},
+            config_overrides={"project_type": "profile"}
+        )
+        # Create an uncataloged file in assets/showcase
+        with open(os.path.join(tmp, "assets", "showcase", "stray.png"), "wb") as f:
+            f.write(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4")
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H009", ids)
+        findings = json.loads(proc.stdout)["findings"]
+        self.assertTrue(any("uncataloged media file on disk" in f["message"] for f in findings if f["rule_id"] == "H009"))
 
 
 if __name__ == "__main__":
