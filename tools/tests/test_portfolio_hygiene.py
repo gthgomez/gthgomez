@@ -935,6 +935,28 @@ class ConfigValidationTests(FixtureCase):
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertIn("no capture group", proc.stderr)
 
+    def test_version_pattern_with_optional_group_that_did_not_match_is_invalid_config(self):
+        """An optional first group can match with ``None``; never traceback.
+
+        ``(v\\d+)?build`` matches ``build`` with ``m.groups() == (None,)``, which
+        is truthy, so the group value must be checked before ``.strip()``.
+        """
+        tmp = self.setup_fixture("clean", config_overrides={
+            "version_checks": [{
+                "file": "version.json",
+                "pattern": r"(v\d+)?build",
+                "domain": "core", "status": "unreleased",
+            }],
+        })
+        with open(os.path.join(tmp, "version.json"), "w") as f:
+            f.write('{"build": 42}')
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertNotIn("Traceback", proc.stderr)
+        self.assertIn("ERROR: version_checks pattern", proc.stderr)
+        self.assertIn("capture group did not participate", proc.stderr)
+        self.assertEqual(proc.stdout.strip(), "")
+
     def test_version_pattern_matching_nothing_is_a_finding(self):
         tmp = self.setup_fixture("clean", config_overrides={
             "version_checks": [{
@@ -947,6 +969,9 @@ class ConfigValidationTests(FixtureCase):
             f.write('{"version": "1.2.3"}')
         ids = self.rule_ids(self.run_checker(tmp))
         self.assertIn("H005", ids)
+        # Exactly one H005 per non-matching pattern: no follow-on
+        # "version value not found" finding for the same pattern.
+        self.assertEqual(ids.count("H005"), 1, ids)
 
 
 if __name__ == "__main__":

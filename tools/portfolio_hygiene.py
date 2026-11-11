@@ -565,16 +565,29 @@ def check_versions(report: Report, config: dict, repo: str) -> None:
         else:
             pattern = vc.get("pattern", r"(.*)")
             m = re.search(pattern, content)
-            if m and m.groups():
-                actual = m.group(1).strip()
-            elif m:
-                raise CheckerError(
-                    f"version_checks pattern for '{rel}' matches but has no "
-                    "capture group to extract the version value")
-            elif "pattern" in vc:
+            if m is None:
+                # A pattern that matches nothing is exactly one H005 finding;
+                # control must not fall through to the generic "version value
+                # not found" report below or the same pattern is double-counted.
                 report.add("H005", "blocking", rel, 0,
                            "version pattern matched nothing in the declared "
                            "source", pattern)
+                continue
+            if not m.groups():
+                raise CheckerError(
+                    f"version_checks pattern for '{rel}' matches but has no "
+                    "capture group to extract the version value")
+            group = m.group(1)
+            if group is None:
+                # The pattern has a first capture group but it is optional and
+                # did not participate in the match (e.g. ``(v\d+)?build``
+                # against ``build``). ``m.groups()`` is truthy here because the
+                # tuple is non-empty, so this must be checked explicitly.
+                raise CheckerError(
+                    f"version_checks pattern for '{rel}' matched but its first "
+                    "capture group did not participate in the match; the "
+                    "version value cannot be extracted")
+            actual = group.strip()
         if actual is None:
             report.add("H005", "blocking", rel, 0,
                        "version value not found in declared source", rel)
