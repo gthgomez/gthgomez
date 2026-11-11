@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import html
 import json
 import os
 import re
@@ -31,6 +32,7 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from typing import Any
+from urllib.parse import unquote
 
 SCHEMA_VERSION = 1
 
@@ -125,6 +127,12 @@ VOLATILE_PATTERNS = [
 MARKDOWN_LINK_RE = re.compile(r"(!?)\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 BADGE_WORKFLOW_RE = re.compile(r"/workflows/([A-Za-z0-9._\-]+)\.ya?ml/badge\.svg")
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+HTML_ANCHOR_RE = re.compile(
+    r"<[A-Za-z][^>]*?\b(?:name|id)\s*=\s*"
+    r"(?:\"(?P<double>[^\"]+)\"|'(?P<single>[^']+)')[^>]*>",
+    re.IGNORECASE,
+)
 
 
 class CheckerError(Exception):
@@ -287,26 +295,89 @@ def strip_fenced_with_lines(text: str) -> tuple[str, list[int]]:
     return "\n".join(out), line_numbers
 
 
+def render_heading_text(text: str) -> str:
+    """Approximate the rendered text of an inline Markdown heading.
+
+    GitHub derives a heading's anchor from the *rendered* heading text, not
+    from the Markdown source. Slugging the source verbatim keeps link URLs and
+    image targets inside the slug, so a heading such as
+    ``### 1. [Babel](https://github.com/gthgomez/Babel) — Runtime`` would get
+    an anchor no reader could ever produce. This collapses the inline markup
+    to the text a reader sees: links contribute their label, images and raw
+    HTML tags contribute no text, code spans keep their content.
+    """
+    # Images render as <img> and contribute no text, so drop them before the
+    # link rule below can turn them into their alt text.
+    text = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", text)
+    # Inline links -> label; reference links -> label.
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"\[([^\]]*)\]\[[^\]]*\]", r"\1", text)
+    # Code spans keep their content, lose their delimiters.
+    text = re.sub(r"`+([^`]*)`+", r"\1", text)
+    # Raw HTML (including <a name="..."> wrappers) contributes no text.
+    text = HTML_TAG_RE.sub("", text)
+    # Markdown backslash escapes render as the escaped character.
+    text = re.sub(r"\\([\\`*_{}\[\]()#+\-.!|>~])", r"\1", text)
+    # Entities render before slugging (&amp; -> &, &nbsp; -> space).
+    text = html.unescape(text).replace("\u00a0", " ")
+    # Emphasis markers are markup, not text. Underscores *between* word
+    # characters are literal (e.g. GBA_Emulator) and GitHub keeps them, so
+    # single underscores are only removed at word boundaries.
+    text = text.replace("**", "").replace("__", "").replace("~~", "")
+    text = text.replace("*", "")
+    text = re.sub(r"(?:\A|(?<=[\s(\[{]))_+", "", text)
+    text = re.sub(r"_+(?=\Z|[\s)\]}\.,;:!?])", "", text)
+    return text
+
+
 def github_anchor(text: str) -> str:
-    slug = text.strip().lower()
+    """Slug for a heading, matching GitHub's github-slugger behaviour.
+
+    Lowercase, drop punctuation/symbols (GitHub keeps letters, digits,
+    underscores and hyphens), then turn spaces into hyphens.
+    """
+    slug = render_heading_text(text).strip().lower()
     slug = re.sub(r"[^\w\- ]", "", slug)
     slug = slug.replace(" ", "-")
     return slug
 
 
+def normalize_fragment(frag: str) -> str:
+    """Normalise a link fragment the way GitHub matches it.
+
+    Fragments are percent-encoded in Markdown sources and GitHub resolves
+    them case-insensitively against lower-case generated ids, so ``#Usage``
+    and ``#%55sage`` both reach ``usage``.
+    """
+    return unquote(frag).strip().lower()
+
+
 def collect_anchors(md_text: str) -> set[str]:
-    anchors: set[str] = {}
-    for line in strip_fenced(md_text).splitlines():
+    """Return every in-document fragment target GitHub would generate.
+
+    Heading slugs are deduplicated with GitHub's numeric suffixes (``-1``,
+    ``-2``, ...). Explicit HTML anchors (``<a name="x">`` / ``id="x"``) are
+    valid targets too, and are accepted in their declared spelling and
+    lower-cased, because fragment matching on this side is lower-cased.
+    """
+    stripped = strip_fenced(md_text)
+    anchors: dict[str, int] = {}
+    for line in stripped.splitlines():
         m = HEADING_RE.match(line)
         if m:
             base = github_anchor(m.group(2))
-            n = anchors.get(base, 0)
-            anchors[base] = n + 1
-    result = set()
+            anchors[base] = anchors.get(base, 0) + 1
+    result: set[str] = set()
     for base, count in anchors.items():
         result.add(base)
         for i in range(1, count):
             result.add(f"{base}-{i}")
+    result.discard("")
+    for match in HTML_ANCHOR_RE.finditer(stripped):
+        name = (match.group("double") or match.group("single") or "").strip()
+        if name:
+            result.add(name)
+            result.add(name.lower())
     return result
 
 
@@ -342,7 +413,15 @@ def check_links(report: Report, config: dict, repo: str, doc_files: list[str]) -
                 path_part, _, frag = target.partition("#")
                 path_part = path_part.strip()
                 if not path_part:
-                    continue  # same-document fragment
+                    # Same-document fragment: validate against this
+                    # document's own headings.
+                    anchors = md_cache.get(rel.lower(), set())
+                    if frag and normalize_fragment(frag) not in anchors:
+                        report.add("H002", "blocking", rel,
+                                   line_numbers[stripped_lineno - 1],
+                                   "markdown anchor not found in this document",
+                                   target)
+                    continue
                 decoded = path_part.replace("%20", " ")
                 if decoded.startswith("file:"):
                     sup = suppression_for(config, "H001", rel)
@@ -388,7 +467,8 @@ def check_links(report: Report, config: dict, repo: str, doc_files: list[str]) -
                             # never read or leak its contents.
                             md_cache[key] = set()
                     anchors = md_cache.get(key)
-                    if anchors is not None and frag not in anchors:
+                    if (anchors is not None
+                            and normalize_fragment(frag) not in anchors):
                         report.add("H002", "blocking", rel, line_numbers[stripped_lineno - 1],
                                    "markdown anchor not found in target document",
                                    target)
@@ -483,9 +563,31 @@ def check_versions(report: Report, config: dict, repo: str) -> None:
                            "configured pointer", str(exc))
                 continue
         else:
-            m = re.search(vc.get("pattern", r"(.*)"), content)
-            if m:
-                actual = m.group(1).strip()
+            pattern = vc.get("pattern", r"(.*)")
+            m = re.search(pattern, content)
+            if m is None:
+                # A pattern that matches nothing is exactly one H005 finding;
+                # control must not fall through to the generic "version value
+                # not found" report below or the same pattern is double-counted.
+                report.add("H005", "blocking", rel, 0,
+                           "version pattern matched nothing in the declared "
+                           "source", pattern)
+                continue
+            if not m.groups():
+                raise CheckerError(
+                    f"version_checks pattern for '{rel}' matches but has no "
+                    "capture group to extract the version value")
+            group = m.group(1)
+            if group is None:
+                # The pattern has a first capture group but it is optional and
+                # did not participate in the match (e.g. ``(v\d+)?build``
+                # against ``build``). ``m.groups()`` is truthy here because the
+                # tuple is non-empty, so this must be checked explicitly.
+                raise CheckerError(
+                    f"version_checks pattern for '{rel}' matched but its first "
+                    "capture group did not participate in the match; the "
+                    "version value cannot be extracted")
+            actual = group.strip()
         if actual is None:
             report.add("H005", "blocking", rel, 0,
                        "version value not found in declared source", rel)
@@ -905,6 +1007,9 @@ def doc_files_for(config: dict, repo: str) -> list[str]:
                             os.path.join(root, name), repo).replace("\\", "/"))
         elif os.path.isfile(full) and entry.lower().endswith(DOC_EXTENSIONS):
             files.add(entry.replace("\\", "/"))
+        else:
+            raise CheckerError(
+                f"public entrypoint not found or not a Markdown doc: {entry}")
     return sorted(files)
 
 

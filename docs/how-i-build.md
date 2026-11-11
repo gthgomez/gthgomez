@@ -55,9 +55,10 @@ python tools/portfolio_hygiene.py check --repo . --config portfolio-manifest.jso
 
 Exit codes: `0` clean, `1` findings, `2` invalid configuration or tool
 failure. Rules H001–H009 cover workstation-path leakage, markdown link and
-anchor resolution, workflow badges, license coherence, version consistency,
-evidence-receipt validity, volatile prose, the approved-command registry,
-and showcase manifest validation.
+anchor resolution (including same-document `#fragment` links), workflow
+badges, license coherence, version consistency, evidence-receipt validity,
+volatile prose, the approved-command registry, and showcase manifest
+validation.
 The registry lists commands; the checker verifies that they reference real
 scripts and files but does not execute them — clean-install CI remains the
 behavioral authority.

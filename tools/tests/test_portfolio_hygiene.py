@@ -743,5 +743,236 @@ class ShowcaseManifestTests(FixtureCase):
         self.assertTrue(any("uncataloged media file on disk" in f["message"] for f in findings if f["rule_id"] == "H009"))
 
 
+class SameDocumentAnchorTests(FixtureCase):
+    def test_broken_same_document_fragment_fails(self):
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n## Target Section\n\n[bad](#no-such-anchor)\n[good](#target-section)\n")
+        proc = self.run_checker(tmp)
+        payload = json.loads(proc.stdout)
+        h002 = [f for f in payload["findings"] if f["rule_id"] == "H002"]
+        self.assertTrue(any("not found in this document" in f["message"]
+                            for f in h002), h002)
+        # The valid same-document anchor must not be flagged.
+        self.assertEqual(len(h002), 1, h002)
+
+    def test_valid_same_document_fragment_passes(self):
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n[good](#clean-fixture)\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    # The headings below are the six flagship headings of this repository's
+    # README verbatim. Slugging the raw source (instead of the rendered text)
+    # puts the link URL inside the slug and produced six blocking H002 false
+    # positives on a document GitHub resolves perfectly. They must pass.
+    LINK_HEADINGS = (
+        ("### 1. [Babel](https://github.com/gthgomez/Babel) — AI Coding-Agent "
+         "Runtime & Evidence Verifier",
+         "#1-babel--ai-coding-agent-runtime--evidence-verifier"),
+        ("### 2. [MonteCarlo-Ledger](https://github.com/gthgomez/MonteCarlo-Ledger) "
+         "— Deterministic Cash-Flow Forecaster & Risk Engine",
+         "#2-montecarlo-ledger--deterministic-cash-flow-forecaster--risk-engine"),
+        ("### 3. [Prismatix](https://github.com/gthgomez/Prismatix) — Multi-Provider "
+         "AI Chat with Cost Governance",
+         "#3-prismatix--multi-provider-ai-chat-with-cost-governance"),
+        ("### 4. [GBA_Emulator](https://github.com/gthgomez/GBA_Emulator) — C++17 "
+         "Emulator Core & Conformance Lab",
+         "#4-gba_emulator--c17-emulator-core--conformance-lab"),
+        ("### 5. [ProofPath](https://github.com/gthgomez/ProofPath) — Offline-First "
+         "Learning System with Verifiable Proofs",
+         "#5-proofpath--offline-first-learning-system-with-verifiable-proofs"),
+        ("### 6. [reliquary](https://github.com/gthgomez/reliquary) — "
+         "Creature-Collecting Web RPG & Engine",
+         "#6-reliquary--creature-collecting-web-rpg--engine"),
+    )
+
+    def test_link_headings_slug_from_rendered_text(self):
+        """Regression: the six README flagships must not false-positive."""
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n")
+            for heading, _anchor in self.LINK_HEADINGS:
+                f.write(heading + "\n\n")
+            f.write("## Index\n\n")
+            for _heading, anchor in self.LINK_HEADINGS:
+                f.write(f"- [jump]({anchor})\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(json.loads(proc.stdout)["findings"], [])
+
+    def test_source_slug_of_link_heading_is_still_broken(self):
+        """Negative control: the old, wrong slug must not be accepted."""
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n" + self.LINK_HEADINGS[0][0] + "\n\n"
+                    "[bad](#1-babelhttpsgithubcomgthgomezbabel--ai-coding-agent-"
+                    "runtime--evidence-verifier)\n")
+        proc = self.run_checker(tmp)
+        payload = json.loads(proc.stdout)
+        h002 = [f for f in payload["findings"] if f["rule_id"] == "H002"]
+        self.assertEqual(len(h002), 1, h002)
+        self.assertIn("not found in this document", h002[0]["message"])
+
+    def test_code_span_heading_slugs_from_its_content(self):
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n## `pip install tool`\n\n[good](#pip-install-tool)\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_broken_code_span_anchor_still_fails(self):
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n## `pip install tool`\n\n[bad](#pip-install)\n")
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H002", ids)
+
+    def test_image_alt_text_does_not_enter_the_slug(self):
+        """Images render as <img>: their alt text is not heading text."""
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n## ![Screenshot of foo](assets/foo.png) Setup\n\n"
+                    "[good](#setup)\n")
+        proc = self.run_checker(tmp)
+        findings = json.loads(proc.stdout)["findings"]
+        # The image file itself is absent from the fixture, so an H002 for the
+        # image target is expected; no fragment finding may be raised.
+        fragment_findings = [f for f in findings
+                             if f["rule_id"] == "H002" and "#" in f["evidence"]]
+        self.assertEqual(fragment_findings, [])
+
+    def test_duplicate_headings_get_numeric_suffixes(self):
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n## Release\n\n[one](#release)\n\n## Release\n\n"
+                    "[two](#release-1)\n\n## Release\n\n[three](#release-2)\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_duplicate_suffix_beyond_count_fails(self):
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n## Release\n\n## Release\n\n[bad](#release-2)\n")
+        proc = self.run_checker(tmp)
+        ids = self.rule_ids(proc)
+        self.assertIn("H002", ids)
+
+    def test_explicit_html_anchor_passes(self):
+        """<a name="..."> / id="..." wrappers are valid fragment targets."""
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n<a name=\"legacy-anchor\"></a>\n\n[good](#legacy-anchor)\n"
+                    "<a id='second-one'></a>\n\n[good](#second-one)\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_uppercase_fragment_passes(self):
+        """GitHub resolves fragments case-insensitively."""
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n[good](#Usage)\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_percent_encoded_fragment_passes(self):
+        """Percent-escapes are decoded before the case-insensitive compare."""
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n[good](#%55sage)\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_reference_style_link_heading_slugs_from_label(self):
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n## See [the guide][guide] now\n\n"
+                    "[guide]: https://example.com\n\n[good](#see-the-guide-now)\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_cross_document_link_heading_anchor_resolves(self):
+        """The same rendered-text slug must apply to cross-document links."""
+        tmp = self.setup_fixture("clean")
+        with open(os.path.join(tmp, "docs", "note.md"), "a") as f:
+            f.write("\n## 7. [Babel](https://github.com/gthgomez/Babel) — Runtime\n")
+        with open(os.path.join(tmp, "README.md"), "a") as f:
+            f.write("\n[good](docs/note.md#7-babel--runtime)\n")
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
+class ConfigValidationTests(FixtureCase):
+    def test_missing_public_entrypoint_is_invalid_config(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "public_entrypoints": ["README.md", "docs/MISSING.md"],
+        })
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("public entrypoint not found", proc.stderr)
+
+    def test_entrypoint_without_markdown_extension_is_invalid_config(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "public_entrypoints": ["LICENSE"],
+        })
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+    def test_version_pattern_without_capture_group_is_invalid_config(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "version_checks": [{
+                "file": "version.json",
+                "pattern": r'"version":\s*"[^"]+"',
+                "domain": "core", "status": "released",
+                "expected_version": "1.2.3",
+            }],
+        })
+        with open(os.path.join(tmp, "version.json"), "w") as f:
+            f.write('{"version": "1.2.3"}')
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("no capture group", proc.stderr)
+
+    def test_version_pattern_with_optional_group_that_did_not_match_is_invalid_config(self):
+        """An optional first group can match with ``None``; never traceback.
+
+        ``(v\\d+)?build`` matches ``build`` with ``m.groups() == (None,)``, which
+        is truthy, so the group value must be checked before ``.strip()``.
+        """
+        tmp = self.setup_fixture("clean", config_overrides={
+            "version_checks": [{
+                "file": "version.json",
+                "pattern": r"(v\d+)?build",
+                "domain": "core", "status": "unreleased",
+            }],
+        })
+        with open(os.path.join(tmp, "version.json"), "w") as f:
+            f.write('{"build": 42}')
+        proc = self.run_checker(tmp)
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertNotIn("Traceback", proc.stderr)
+        self.assertIn("ERROR: version_checks pattern", proc.stderr)
+        self.assertIn("capture group did not participate", proc.stderr)
+        self.assertEqual(proc.stdout.strip(), "")
+
+    def test_version_pattern_matching_nothing_is_a_finding(self):
+        tmp = self.setup_fixture("clean", config_overrides={
+            "version_checks": [{
+                "file": "version.json",
+                "pattern": r"no such text (here)",
+                "domain": "core", "status": "unreleased",
+            }],
+        })
+        with open(os.path.join(tmp, "version.json"), "w") as f:
+            f.write('{"version": "1.2.3"}')
+        ids = self.rule_ids(self.run_checker(tmp))
+        self.assertIn("H005", ids)
+        # Exactly one H005 per non-matching pattern: no follow-on
+        # "version value not found" finding for the same pattern.
+        self.assertEqual(ids.count("H005"), 1, ids)
+
+
 if __name__ == "__main__":
     unittest.main()
