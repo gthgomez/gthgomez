@@ -89,14 +89,14 @@ pytest tests
 
 ## 9. User-Facing Demonstration
 
-![Monte Carlo Decision Studio and Cash Flow Timeline](../../assets/showcase/monte-carlo-decision-studio.png)
+![Monte Carlo Try a Decision Studio comparing a purchase against the current plan](../../assets/showcase/monte-carlo-decision-studio.png)
 
 Through the interactive web companion and CLI:
 1. Initialize a new local ledger database: `python -m monte_carlo_ledger init`.
 2. Register recurring payroll and fixed obligations (rent, insurance, utilities).
 3. Generate a 90-day cash-flow forecast showing daily projected balances.
 4. Run a Monte Carlo simulation with 5,000 iterations to evaluate the probability of a mid-month liquidity shortfall under simulated surprise expenses.
-5. Review the resulting safe-to-spend recommendation and trough distribution.
+5. Review the cautious amount to spend and the difficult, middle, and favorable low and ending balances.
 
 ## 10. Current Limitations
 

@@ -46,7 +46,7 @@ The six systems below demonstrate the core of my technical work across AI infras
 
 [![Monte Carlo Ledger Web Companion](assets/showcase/monte-carlo-dashboard.png)](https://montecarlo-ledger.vercel.app)
 
-- **What It Looks Like Running**: An interactive web companion featuring a 90-day cash-flow timeline, live Safe-to-Spend P10 quantile gauges, projected liquidity trough indicators, and an interactive What-If Decision Studio with real-time fragility sliders.
+- **What It Looks Like Running**: An interactive web companion built around a 90-day plan: a plain-language Home summary showing money recorded, a cautious amount to spend, and the lowest projected point; a Future view with difficult, middle, and favorable low and ending balances; and a Try a Decision studio that compares a purchase, late payday, bill change, savings move, or debt payoff against the current plan.
 - **What Users Accomplish**: Evaluate cash-flow fragility and answer critical financial questions before spending: *"How much can I safely spend today without bouncing an upcoming obligation?"*
 - **Core Engineering Challenge**: Financial risk is path-dependent. Standard monthly budgeting tools ignore exact calendar sequencing: rent on the 1st vs. payroll on the 15th causes an overdraft even if the month ends positive. MonteCarlo-Ledger implements a **two-stage forecasting engine**: Stage 1 projects known commitments onto an exact calendar timeline; Stage 2 executes thousands of seeded Monte Carlo stochastic trials to stress-test that timeline against surprise expenses.
 - **Architecture**: Enforces a signed-transaction integer-cents ledger (`amount INTEGER NOT NULL`, `type IN ('Income', 'Expense', 'Adjustment')`) where balances are strictly derived from transaction log deltas. Uses 64-bit integer cents throughout to eliminate floating-point drift, validated through property-based invariant testing.
@@ -55,11 +55,11 @@ The six systems below demonstrate the core of my technical work across AI infras
 
 ### 3. [Prismatix](https://github.com/gthgomez/Prismatix) — Multi-Provider AI Chat with Cost Governance
 > **Stack**: TypeScript, Vite, React, Deno Edge Functions, Supabase Postgres | **Role**: Flagship 3 (Full-Stack Engineering)  
-> **Explore**: [Try Live App](https://prismatix-app.vercel.app) • [Demo Video](https://github.com/gthgomez/Prismatix/blob/main/docs/showcase/media/workflow.mp4) • [Source Code](https://github.com/gthgomez/Prismatix) • [Technical Case Study](docs/case-studies/prismatix.md) • [On-Device Companion](https://github.com/gthgomez/PrismLocal)
+> **Explore**: [Try Interactive Demo](https://prismatix-app.vercel.app/demo) • [Demo Video](https://github.com/gthgomez/Prismatix/blob/main/docs/showcase/media/workflow.mp4) • [Source Code](https://github.com/gthgomez/Prismatix) • [Technical Case Study](docs/case-studies/prismatix.md) • [On-Device Companion](https://github.com/gthgomez/PrismLocal)
 
-[![Prismatix Multi-Model Interface & Routing](assets/showcase/prismatix-overview.jpg)](https://prismatix-app.vercel.app)
+[![Prismatix Explainable Multi-Model Routing](assets/showcase/prismatix-overview.jpg)](https://prismatix-app.vercel.app/demo)
 
-- **What It Looks Like Running**: An interactive multi-model workspace featuring explainable auto-routing, model complexity tiering, real-time cost attribution, and per-turn spend caps. (Demonstrates scripted interactive routing and model tiers; live provider calls require user BYOK keys).
+- **What It Looks Like Running**: An interactive public demo of a multi-model workspace featuring explainable auto-routing, model complexity tiering, real-time cost attribution, and per-turn spend caps. The demo replays scripted routing, fast-concept, and multi-model debate scenarios; live provider calls require user BYOK keys.
 - **What Users Accomplish**: Access premier frontier models (Claude, GPT, Gemini, DeepSeek) through a single unified interface with transparent cost attribution, automatic task-based model selection, and multi-model debate synthesis.
 - **Core Engineering Challenge**: Eliminating vendor opacity and runaway cloud spend. Prismatix implements **explainable model routing** paired with **fail-closed budget controls** on Deno Edge Functions. Unpriced models fail closed with an explicit HTTP 409 Conflict, and admission database outages return HTTP 503 before invoking external providers.
 - **Architecture**: Built on Deno Edge Functions and Supabase Postgres. Features server-side authenticated encryption (AES-256-GCM via Deno Edge Functions with server-managed secrets) for stored BYOK credentials, streaming token counters, and post-stream settlement receipts. Production web deployment runs commit `7d143a1`.
@@ -96,7 +96,7 @@ The six systems below demonstrate the core of my technical work across AI infras
 > **Stack**: TypeScript, React, HTML5 Canvas, Vite, Tailwind CSS | **Role**: Flagship 6 (Game Engine & Interactive Systems)  
 > **Explore**: [Play Live Game](https://reliquary-dusky.vercel.app) • [Source Code](https://github.com/gthgomez/reliquary) • [Technical Case Study](docs/case-studies/reliquary.md) • [Engine Architecture](https://github.com/gthgomez/reliquary/blob/main/docs/ARCHITECTURE.md)
 
-[![Reliquary Playable Creature-Collecting Web RPG](assets/showcase/reliquary-battle.png)](https://reliquary-dusky.vercel.app)
+[![Reliquary Turn-Based Creature Battle in the Live Web RPG](assets/showcase/reliquary-battle.png)](https://reliquary-dusky.vercel.app)
 
 - **What It Looks Like Running**: A playable web-based creature-binding RPG featuring turn-based tactical combat, Elderhall exploration on 2D tilemaps, creature party management, and responsive gamepad/touch controls.
 - **What Users Accomplish**: Play an authentic retro-style creature RPG in any browser, explore procedural wild encounter zones, and battle with deterministic state transitions that persist across offline sessions via PWA storage.
