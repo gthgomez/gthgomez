@@ -2,7 +2,7 @@
 
 **Multi-provider AI chat with explainable model routing, streaming responses, and fail-closed pricing controls.**
 
-[![Prismatix Multi-Model Interface & Routing](../../assets/showcase/prismatix-overview.jpg)](../../assets/showcase/prismatix-overview.jpg)
+[![Prismatix Explainable Multi-Model Routing](../../assets/showcase/prismatix-overview.jpg)](../../assets/showcase/prismatix-overview.jpg)
 
 ## 1. Problem Being Solved
 
@@ -96,7 +96,7 @@ npm test
 
 [![Prismatix Fast Concept & Multi-Model Routing](../../assets/showcase/prismatix-fast-concept.jpg)](../../assets/showcase/prismatix-fast-concept.jpg)
 
-Visiting the live application at [https://prismatix-app.vercel.app](https://prismatix-app.vercel.app):
+Visiting the public demo at [https://prismatix-app.vercel.app/demo](https://prismatix-app.vercel.app/demo):
 1. The user selects "Auto-Router" or a designated frontier model tier.
 2. In the interactive demonstration, scripted prompt scenarios illustrate the **Route Explanation Inspector**, showing how tasks are categorized (code generation, deep reasoning, or fast concept explanation) and routed to cost-optimal models.
 3. Live custom multi-turn chat is enabled by adding your own provider API keys via the BYOK settings panel.
@@ -120,5 +120,6 @@ Visiting the live application at [https://prismatix-app.vercel.app](https://pris
 
 - **Canonical Repository**: [https://github.com/gthgomez/Prismatix](https://github.com/gthgomez/Prismatix)
 - **Production Web Deployment**: [https://prismatix-app.vercel.app](https://prismatix-app.vercel.app)
+- **Public Interactive Demo**: [https://prismatix-app.vercel.app/demo](https://prismatix-app.vercel.app/demo)
 - **Workflow Video Demonstration**: [https://github.com/gthgomez/Prismatix/blob/main/docs/showcase/media/workflow.mp4](https://github.com/gthgomez/Prismatix/blob/main/docs/showcase/media/workflow.mp4)
 - **On-Device Companion**: [https://github.com/gthgomez/PrismLocal](https://github.com/gthgomez/PrismLocal)

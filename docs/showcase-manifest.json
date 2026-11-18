@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "manifest_name": "showcase-evidence-manifest",
-  "generated_at_utc": "2026-11-18T16:39:01Z",
+  "generated_at_utc": "2026-11-18T17:33:14Z",
   "account": "gthgomez",
   "flagships": [
     {
@@ -27,7 +27,7 @@
       "repository": "gthgomez/MonteCarlo-Ledger",
       "source_sha": "78938af25a33fcce6978f42a17dd3610fbc5e12f",
       "captured_version": "0.1.0",
-      "capture_date": "2026-11-10",
+      "capture_date": "2026-11-18",
       "demonstration_type": "web-ui-capture",
       "primary_media": "assets/showcase/monte-carlo-dashboard.png",
       "supporting_media": [
@@ -35,10 +35,10 @@
         "assets/showcase/monte-carlo-architecture.svg"
       ],
       "live_url": "https://montecarlo-ledger.vercel.app",
-      "capture_method": "Live browser capture of Monte Carlo ledger companion showing cash flow forecast, P10 safe-to-spend buffer, and interactive decision studio",
+      "capture_method": "Live browser capture of the current web companion at 1920x900: Home summary, cautious amount to spend, lowest projected point, the 90-day plan, and the Try a Decision studio",
       "test_evidence": "184/184 pytest tests passed (Hypothesis property invariants, integer math safety, API contracts)",
       "deployment_sha": "78938af25a33fcce6978f42a17dd3610fbc5e12f",
-      "known_limitations": "Macroeconomic shocks must be modeled as discrete manual scenarios; single integer-cents base currency.",
+      "known_limitations": "Macroeconomic shocks must be modeled as discrete manual scenarios; single integer-cents base currency. The screenshots show the built-in demo household, not user financial data; forecasts are estimates, not guarantees.",
       "verification_status": "CURRENT"
     },
     {
@@ -47,7 +47,7 @@
       "repository": "gthgomez/Prismatix",
       "source_sha": "5d8127fd2357cc0a4fd3ed87e2ba5582c3d90913",
       "captured_version": "0.2.0-pre.1",
-      "capture_date": "2026-11-10",
+      "capture_date": "2026-11-18",
       "demonstration_type": "web-ui-capture",
       "primary_media": "assets/showcase/prismatix-overview.jpg",
       "supporting_media": [
@@ -55,11 +55,11 @@
         "assets/showcase/prismatix-fast-concept.jpg",
         "assets/showcase/prismatix-debate.jpg"
       ],
-      "live_url": "https://prismatix-app.vercel.app",
-      "capture_method": "Scripted interactive public demonstration on prismatix-app.vercel.app showcasing multi-model routing intelligence, model tiers, and streaming UX (live provider inference requires user-provided BYOK keys)",
+      "live_url": "https://prismatix-app.vercel.app/demo",
+      "capture_method": "Live browser capture of the public /demo surface at 1280x900: architecture, fast-concept routing explanation, and multi-model debate tabs; all responses, costs, and model choices are scripted examples",
       "test_evidence": "912/912 vitest tests passed (routing matrix, SSE streaming, fail-closed admission)",
       "deployment_sha": "7d143a16e60eca5d503578374a90aec421e99fc8",
-      "known_limitations": "Production deployment is at commit 7d143a1 (PR #59); newer Wave 2 knowledge and multimodal features exist on default branch; BYOK credential storage uses server-side AES-256-GCM authenticated encryption in Deno Edge Functions with server-managed secrets.",
+      "known_limitations": "Production deployment is at commit 7d143a1 (PR #59); newer Wave 2 knowledge and multimodal features exist on default branch; BYOK credential storage uses server-side AES-256-GCM authenticated encryption in Deno Edge Functions with server-managed secrets. The screenshots show the scripted public demo, not authenticated chat or live provider billing.",
       "verification_status": "CURRENT"
     },
     {
@@ -107,7 +107,7 @@
       "repository": "gthgomez/reliquary",
       "source_sha": "3c397e1f08e74e1e50badc7f44e5af18188e1c2b",
       "captured_version": "19.2.8",
-      "capture_date": "2026-11-09",
+      "capture_date": "2026-11-18",
       "demonstration_type": "gameplay-ui-capture",
       "primary_media": "assets/showcase/reliquary-battle.png",
       "supporting_media": [
@@ -115,10 +115,10 @@
         "assets/showcase/reliquary-starters.png"
       ],
       "live_url": "https://reliquary-dusky.vercel.app",
-      "capture_method": "Live browser gameplay capture of decoupled turn-based battle engine, Elderhall exploration, and creature binding",
+      "capture_method": "Live browser gameplay capture at 1280x800: Elderhall exploration, Binding Grove starter selection, and a wild Mirewhelp vs Pebblet battle played from a fresh save",
       "test_evidence": "282/282 node:test unit and integration tests passed (battle determinism, map geometry, save migration)",
       "deployment_sha": "3c397e1f08e74e1e50badc7f44e5af18188e1c2b",
-      "known_limitations": "Playable web RPG prototype with procedural and prototype visual assets; browser audio policies require user gesture before soundtrack initialization.",
+      "known_limitations": "Playable web RPG prototype with procedural and prototype visual assets; browser audio policies require user gesture before soundtrack initialization. The screenshots are from a fresh save on the live deployment, not a complete playthrough.",
       "verification_status": "CURRENT"
     }
   ]
