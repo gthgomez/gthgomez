@@ -25,9 +25,6 @@ The six systems below demonstrate the core of my technical work across AI infras
 | **[ProofPath](#5-proofpath--offline-first-learning-system-with-verifiable-proofs)** | Offline-First Learning & WASM | React Native, Pyodide, SQLite | Pyodide WebWorker sandbox & provenance export | [Case Study](docs/case-studies/proofpath.md) |
 | **[reliquary](#6-reliquary--creature-collecting-web-rpg--engine)** | Game Simulation Engine & PWA | TypeScript, React, HTML5 Canvas | Pure headless battle engine & safe-spawn math | [Case Study](docs/case-studies/reliquary.md) |
 
-> [!NOTE]
-> All six flagships are pinned publicly on [github.com/gthgomez](https://github.com/gthgomez). Custom pin display reordering requires an authenticated GitHub web session (`BLOCKED_USER_ACTION`).
-
 ---
 
 ### 1. [Babel](https://github.com/gthgomez/Babel) — AI Coding-Agent Runtime & Evidence Verifier
