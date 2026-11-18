@@ -2,7 +2,7 @@
 
 **C++17 Game Boy Advance emulator core with an SDL desktop host, deterministic tests, and public hardware-conformance evidence.**
 
-![GBA Emulator Desktop Host Running Synthetic Video Conformance Test](../../assets/showcase/gba-emulator-running.png)
+![GBA Emulator Desktop Host Running Pokemon Emerald](../../assets/showcase/gba-emulator-running.png)
 
 ## 1. Problem Being Solved
 
@@ -64,7 +64,7 @@ flowchart TD
 
 - **Strict Warnings-as-Errors Compilation**: Built with `g++ -std=c++17 -Wall -Wextra -Werror` on both Windows and Linux, guaranteeing zero compiler warnings, zero implicit type truncations, and strict sign-comparison hygiene.
 - **Separation of Core Engine from Host Presentation**: The emulation core contains zero windowing or operating system dependencies. Host frontends (SDL3 or Android) communicate strictly through clean C++ interfaces: passing input bitmasks, receiving audio frames, and reading the 240x160 RGB pixel buffer.
-- **Strict Legal & Non-Commercial ROM Stance**: The repository does not bundle or test commercial ROMs. Verification is conducted exclusively using public, open-source test suites (such as the mGBA hardware test suite) built from assembly or legal C sources.
+- **Strict Legal Boundary**: The repository bundles no ROMs, BIOS images, or save data. The public conformance matrix uses open-source test suites (such as the mGBA hardware test suite) built from assembly or legal C sources. A single user-supplied retail boot smoke is documented as non-redistributed local evidence and does not establish general compatibility.
 
 ## 6. Alternatives and Tradeoffs
 
@@ -82,28 +82,29 @@ flowchart TD
 ## 8. Reproducible Tests and Validation
 
 The project maintains rigorous automated verification:
-- **Local Core Verifiers**: 32 distinct C++ test binaries validating CPU instructions, barrel shifter logic, memory waitstate timing, and interrupt handling (36 total test fixtures including host and ROM smoke runners at revision `7ae99b5`):
+- **Local Core Verifiers**: 32 distinct C++ test binaries validating CPU instructions, barrel shifter logic, memory waitstate timing, and interrupt handling (36 total test fixtures including host and ROM smoke runners at revision `f85025e`):
 ```powershell
 .\tools\run-core-tests.ps1
 ```
 All 32 local core test binaries pass cleanly on Windows and Linux runners with zero warnings.
+- **Retail Boot Smoke Matrix (2026-11-18)**: 4/4 cases completed at `f85025e` (stock and Crest v2, fresh and blank 128 KiB save), after `f9d2db6` fixed nested HLE IRQ return state.
 - **Public mGBA Conformance Suites**: Benchmarked against 13 public test suites from the respected mGBA project:
   - 11 suites are fully **GREEN** (including `io-read`, `memory`, `arm`, and `thumb`).
   - 2 suites (`timing` and `misc-edge`) are tracked with known pre-existing timing nuances, documented transparently in `docs/open-issues-status.md`.
 
 ## 9. User-Facing Demonstration
 
-![GBA Emulator Synthetic Conformance Test](../../assets/showcase/gba-emulator-running.png)
+![GBA Emulator Running Pokemon Emerald Title Screen](../../assets/showcase/gba-emulator-running.png)
 
 Running the desktop interactive host:
 1. Compile and launch `gba-desktop` via CMake.
-2. Load an open-source test ROM or synthetic conformance binary.
+2. Load an open-source test ROM, synthetic conformance binary, or a user-supplied ROM under the documented local boot-smoke policy.
 3. Observe cycle-stepped scanline rendering at 240x160 resolution scaled with 3x integer nearest-neighbor filtering (720x480).
 4. Test real-time input handling, audio playback, cartridge persistence, and instant save/load states.
 
 ## 10. Current Limitations
 
-- **Commercial-ROM Compatibility (Untested / No Claim)**: Testing and verification are conducted exclusively using legal, open-source synthetic test ROMs and the mGBA hardware conformance suite. Commercial game ROMs (such as Pokemon Emerald) are absent from local test suites and remain untested per legal policy.
+- **Commercial-ROM Compatibility (Local Boot Smoke Only / No General Claim)**: The public conformance matrix uses legal, open-source synthetic test ROMs and the mGBA hardware conformance suite. Stock Pokemon Emerald (`BPEE`) boots through title and intro on a blank 128 KiB Flash image; no full-game playthrough, save compatibility, audio, performance, or broad compatibility claim is made. See the [boot-smoke record](https://github.com/gthgomez/GBA_Emulator/blob/main/docs/evidence/2026-11-18-emerald-boot.md).
 - **Hardware Conformance Coverage**: While core instruction and memory tests are green, complex sub-cycle timing corner cases (`timing` suite 1956/2020) remain open for future hardening.
 - **Physical Mobile Optimization**: Android physical-device qualification identified audio buffer underruns under throttled mobile CPU governors, maintained transparently as a known roadmap item in `docs/evidence/`.
 

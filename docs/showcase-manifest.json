@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "manifest_name": "showcase-evidence-manifest",
-  "generated_at_utc": "2026-11-10T03:35:00Z",
+  "generated_at_utc": "2026-11-18T16:39:01Z",
   "account": "gthgomez",
   "flagships": [
     {
@@ -66,19 +66,19 @@
       "id": "gba-emulator",
       "name": "GBA_Emulator",
       "repository": "gthgomez/GBA_Emulator",
-      "source_sha": "7ae99b5122c06b3bbe0ec8fe7e41fe73c44f47e8",
-      "captured_version": "0.1.0-conformance",
-      "capture_date": "2026-11-10",
+      "source_sha": "f85025e253ae588906823ecbaf39d37fe0f79479",
+      "captured_version": "0.1.0-desktop",
+      "capture_date": "2026-11-18",
       "demonstration_type": "native-desktop-capture",
       "primary_media": "assets/showcase/gba-emulator-running.png",
       "supporting_media": [
         "assets/showcase/gba-architecture.svg"
       ],
-      "live_url": "https://github.com/gthgomez/GBA_Emulator/blob/main/docs/open-issues-status.md",
-      "capture_method": "Headless PPU framebuffer capture of C++17 emulation core running legal synthetic video conformance fixture at 3x integer scale (720x480 RGB)",
-      "test_evidence": "32/32 local core C++ verifiers passed (36 total including host/smoke runners at revision 7ae99b5); 11/13 public mGBA test suites green",
+      "live_url": "https://github.com/gthgomez/GBA_Emulator/blob/main/docs/evidence/2026-11-18-emerald-boot.md",
+      "capture_method": "Headless PPU framebuffer capture of the C++17 desktop host running the user-supplied Pokemon Emerald (BPEE) title screen at 3x integer scale (720x480 RGB); ROM SHA-256 a9dec84dfe7f62ab2220bafaef7479da0929d066ece16a6885f6226db19085af; blank 128 KiB save",
+      "test_evidence": "32/32 local core C++ verifiers; 11/13 public mGBA test suites green; 4/4 ROM/save matrix cases completed at f85025e after fix f9d2db6 (stock and Crest v2, fresh and blank save)",
       "deployment_sha": "N/A",
-      "known_limitations": "Commercial ROM compatibility: NO CLAIM. Tested exclusively against synthetic video suite and local legal mGBA conformance suite (suite.gba). Commercial game ROMs (such as Pokemon Emerald) are absent from local test harness and untested per legal policy.",
+      "known_limitations": "Commercial-ROM compatibility: LOCAL BOOT SMOKE ONLY. Stock Emerald (BPEE) boots through title and intro on a blank 128 KiB Flash image; the save contains no progress, and no full-game, audio, performance, or broad compatibility claim is made. Pokemon is a trademark of Nintendo/Creatures Inc./GAME FREAK inc.; the screenshot is one non-redistributed portfolio excerpt. No ROM, BIOS, or save data is published.",
       "verification_status": "CURRENT"
     },
     {

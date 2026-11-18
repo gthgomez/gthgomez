@@ -70,12 +70,12 @@ The six systems below demonstrate the core of my technical work across AI infras
 > **Stack**: C++17, CMake, SDL3, Google Oboe | **Role**: Flagship 4 (Systems Programming & Architecture)  
 > **Explore**: [Source Code](https://github.com/gthgomez/GBA_Emulator) • [Technical Case Study](docs/case-studies/gba-emulator.md) • [Open Issues & Conformance Status](https://github.com/gthgomez/GBA_Emulator/blob/main/docs/open-issues-status.md) • [Android Shell](https://github.com/gthgomez/GbaEmulatorAndroid)
 
-[![GBA Emulator Desktop Host Running Synthetic Video Conformance Test](assets/showcase/gba-emulator-running.png)](https://github.com/gthgomez/GBA_Emulator)
+[![GBA Emulator Desktop Host Running Pokemon Emerald](assets/showcase/gba-emulator-running.png)](https://github.com/gthgomez/GBA_Emulator)
 
-- **What It Looks Like Running**: A cycle-stepped C++17 desktop emulator (`gba-desktop.exe`) executing interactive synthetic video and timing conformance suites at 3x integer scale (720x480) with scanline-accurate 2D PPU rasterization.
+- **What It Looks Like Running**: A cycle-stepped C++17 desktop emulator (`gba-desktop.exe`) running the retail Pokemon Emerald (`BPEE`) boot path at 3x integer scale (720x480) with scanline-accurate 2D PPU rasterization. The same build runs the legal mGBA conformance suite and synthetic timing fixtures.
 - **What Users Accomplish**: Study cycle-stepped computer architecture, inspect ARMv4T pipeline hazards, and run verified homebrew and conformance test suites on a modular, portable emulation core.
 - **Core Engineering Challenge**: Accurate hardware timing and bus waitstates without ad-hoc game hacks. The memory bus controller accurately models electrical waitstates: 0 waitstates for 32-bit IWRAM, 2 waitstates for 16-bit EWRAM, and configurable waitstates for Game Pak ROM.
-- **Status & Policy**: Verified across 32 local core verifiers (36 total including host/smoke runners at revision 7ae99b5) and public mGBA test suites (11/13 green). Testing is performed strictly against legal open-source synthetic suites; commercial ROM compatibility remains untested per legal policy.
+- **Status & Policy**: Verified across 32 local core verifiers (36 total including host/smoke runners at revision `f85025e`) and public mGBA test suites (11/13 green). The public conformance matrix still uses only the legal open-source mGBA suite. A single user-supplied retail boot smoke (Pokemon Emerald, `BPEE`) is documented as non-redistributed local evidence and is not a general commercial-ROM compatibility claim. No ROM, BIOS, or save data is published. See the [boot-smoke record](https://github.com/gthgomez/GBA_Emulator/blob/main/docs/evidence/2026-11-18-emerald-boot.md).
 
 ---
 
